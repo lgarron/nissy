@@ -6,9 +6,9 @@
 #include "solve.h"
 #include "steps.h"
 
-void                    free_args(CommandArgs *args);
-CommandArgs *           new_args(void);
+void free_args(CommandArgs *args);
+CommandArgs *new_args(void);
 
-extern Command *        commands[];
+extern Command *commands[];
 
 #endif

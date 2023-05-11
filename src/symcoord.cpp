@@ -1,134 +1,143 @@
 #include "symcoord.h"
 
 /* These constants have been computed generating the respective SymData */
-#define CLASSES_CP_16        2768
-#define CLASSES_EOFBEPOS_16  64430
+#define CLASSES_CP_16 2768
+#define CLASSES_EOFBEPOS_16 64430
 
-static uint64_t    index_cp_sym16(Cube cube);
-static uint64_t    index_eofbepos_sym16(Cube cube);
-static uint64_t    index_drud_sym16(Cube cube);
-static uint64_t    index_drudfin_noE_sym16(Cube cube);
-static uint64_t    index_nxopt31(Cube cube);
+static uint64_t index_cp_sym16(Cube cube);
+static uint64_t index_eofbepos_sym16(Cube cube);
+static uint64_t index_drud_sym16(Cube cube);
+static uint64_t index_drudfin_noE_sym16(Cube cube);
+static uint64_t index_nxopt31(Cube cube);
 
-static uint64_t    move_cp_sym16(Move m, uint64_t ind);
-static uint64_t    move_eofbepos_sym16(Move m, uint64_t ind);
-static uint64_t    move_drud_sym16(Move m, uint64_t ind);
-static uint64_t    move_drudfin_noE_sym16(Move m, uint64_t ind);
-static uint64_t    move_nxopt31(Move m, uint64_t ind);
+static uint64_t move_cp_sym16(Move m, uint64_t ind);
+static uint64_t move_eofbepos_sym16(Move m, uint64_t ind);
+static uint64_t move_drud_sym16(Move m, uint64_t ind);
+static uint64_t move_drudfin_noE_sym16(Move m, uint64_t ind);
+static uint64_t move_nxopt31(Move m, uint64_t ind);
 
-static int         tfind_from_mask(uint64_t mask, Trans *ret);
-static int         tfind_drud_sym16(uint64_t ind, Trans *ret);
-static int         tfind_drudfin_noE_sym16(uint64_t ind, Trans *ret);
-static int         tfind_nxopt31(uint64_t ind, Trans *ret);
+static int tfind_from_mask(uint64_t mask, Trans *ret);
+static int tfind_drud_sym16(uint64_t ind, Trans *ret);
+static int tfind_drudfin_noE_sym16(uint64_t ind, Trans *ret);
+static int tfind_nxopt31(uint64_t ind, Trans *ret);
 
-static uint64_t    transform_cp(Trans t, uint64_t ind);
-static uint64_t    transform_eofbepos(Trans t, uint64_t ind);
-static uint64_t    transform_drud_sym16(Trans t, uint64_t ind);
-static uint64_t    transform_drudfin_noE_sym16(Trans t, uint64_t ind);
-static uint64_t    transform_nxopt31(Trans t, uint64_t ind);
+static uint64_t transform_cp(Trans t, uint64_t ind);
+static uint64_t transform_eofbepos(Trans t, uint64_t ind);
+static uint64_t transform_drud_sym16(Trans t, uint64_t ind);
+static uint64_t transform_drudfin_noE_sym16(Trans t, uint64_t ind);
+static uint64_t transform_nxopt31(Trans t, uint64_t ind);
 
-static void        gensym(SymData *sd);
-static void        init_symc_moves(void);
-static void        init_symc_trans(void);
-static bool        read_symdata_file(SymData *sd);
-static bool        read_symc_moves_file(void);
-static bool        read_symc_trans_file(void);
-static bool        write_symdata_file(SymData *sd);
-static bool        write_symc_moves_file(void);
-static bool        write_symc_trans_file(void);
+static void gensym(SymData *sd);
+static void init_symc_moves(void);
+static void init_symc_trans(void);
+static bool read_symdata_file(SymData *sd);
+static bool read_symc_moves_file(void);
+static bool read_symc_trans_file(void);
+static bool write_symdata_file(SymData *sd);
+static bool write_symc_moves_file(void);
+static bool write_symc_trans_file(void);
 
 /* Some tables ***************************************************************/
 
-static uint64_t    move_cp_16[NMOVES][CLASSES_CP_16];
-static uint64_t    move_eofbepos_16[NMOVES][CLASSES_EOFBEPOS_16];
+static uint64_t move_cp_16[NMOVES][CLASSES_CP_16];
+static uint64_t move_eofbepos_16[NMOVES][CLASSES_EOFBEPOS_16];
 
-static int         trans_eofbepos[NTRANS][POW2TO11*BINOM12ON4];
-static int         trans_epud[NTRANS][FACTORIAL8];
-static int         trans_cpud_separate[NTRANS][BINOM8ON4];
+static int trans_eofbepos[NTRANS][POW2TO11 * BINOM12ON4];
+static int trans_epud[NTRANS][FACTORIAL8];
+static int trans_cpud_separate[NTRANS][BINOM8ON4];
 
-static Trans       ttrep_move_cp_16[NMOVES][CLASSES_CP_16];
-static Trans       ttrep_move_eofbepos_16[NMOVES][CLASSES_EOFBEPOS_16];
-
+static Trans ttrep_move_cp_16[NMOVES][CLASSES_CP_16];
+static Trans ttrep_move_eofbepos_16[NMOVES][CLASSES_EOFBEPOS_16];
 
 /* Transformation groups and symmetry data ***********************************/
 
 static Trans
-trans_group_udfix[16] = {
-	uf, ur, ub, ul,
-	df, dr, db, dl,
-	uf_mirror, ur_mirror, ub_mirror, ul_mirror,
-	df_mirror, dr_mirror, db_mirror, dl_mirror,
+		trans_group_udfix[16] = {
+				uf,
+				ur,
+				ub,
+				ul,
+				df,
+				dr,
+				db,
+				dl,
+				uf_mirror,
+				ur_mirror,
+				ub_mirror,
+				ul_mirror,
+				df_mirror,
+				dr_mirror,
+				db_mirror,
+				dl_mirror,
 };
 
 static SymData
-sd_cp_16 = {
-	.filename  = "sd_cp_16_new",
-	.coord     = &coord_cp,
-	.sym_coord = &coord_cp_sym16,
-	.ntrans    = 16,
-	.trans     = trans_group_udfix,
-	.transform = transform_cp,
+		sd_cp_16 = {
+				.filename = "sd_cp_16_new",
+				.coord = &coord_cp,
+				.sym_coord = &coord_cp_sym16,
+				.ntrans = 16,
+				.trans = trans_group_udfix,
+				.transform = transform_cp,
 };
 
 static SymData
-sd_eofbepos_16 = {
-	.filename  = "sd_eofbepos_16_new",
-	.coord     = &coord_eofbepos,
-	.sym_coord = &coord_eofbepos_sym16,
-	.ntrans    = 16,
-	.trans     = trans_group_udfix,
-	.transform = transform_eofbepos,
+		sd_eofbepos_16 = {
+				.filename = "sd_eofbepos_16_new",
+				.coord = &coord_eofbepos,
+				.sym_coord = &coord_eofbepos_sym16,
+				.ntrans = 16,
+				.trans = trans_group_udfix,
+				.transform = transform_eofbepos,
 };
 
-SymData * all_sd[] = {
-	&sd_cp_16,
-	&sd_eofbepos_16,
-	NULL
-};
-
+SymData *all_sd[] = {
+		&sd_cp_16,
+		&sd_eofbepos_16,
+		NULL};
 
 /* Coordinates and their implementation **************************************/
 
 Coordinate
-coord_eofbepos_sym16 = {
-	.index     = index_eofbepos_sym16,
-	.move      = move_eofbepos_sym16,
+		coord_eofbepos_sym16 = {
+				.index = index_eofbepos_sym16,
+				.move = move_eofbepos_sym16,
 };
 
 Coordinate
-coord_cp_sym16 = {
-	.index     = index_cp_sym16,
-	.move      = move_cp_sym16,
+		coord_cp_sym16 = {
+				.index = index_cp_sym16,
+				.move = move_cp_sym16,
 };
 
 Coordinate
-coord_drud_sym16 = {
-	.index     = index_drud_sym16,
-	.move      = move_drud_sym16,
-	.max       = POW3TO7 * CLASSES_EOFBEPOS_16,
-	.base      = &coord_eofbepos_sym16,
-	.transform = transform_drud_sym16,
-	.tfind     = tfind_drud_sym16,
+		coord_drud_sym16 = {
+				.index = index_drud_sym16,
+				.move = move_drud_sym16,
+				.max = POW3TO7 * CLASSES_EOFBEPOS_16,
+				.base = &coord_eofbepos_sym16,
+				.transform = transform_drud_sym16,
+				.tfind = tfind_drud_sym16,
 };
 
 Coordinate
-coord_drudfin_noE_sym16 = {
-	.index     = index_drudfin_noE_sym16,
-	.move      = move_drudfin_noE_sym16,
-	.max       = FACTORIAL8 * CLASSES_CP_16,
-	.base      = &coord_cp_sym16,
-	.transform = transform_drudfin_noE_sym16,
-	.tfind     = tfind_drudfin_noE_sym16,
+		coord_drudfin_noE_sym16 = {
+				.index = index_drudfin_noE_sym16,
+				.move = move_drudfin_noE_sym16,
+				.max = FACTORIAL8 * CLASSES_CP_16,
+				.base = &coord_cp_sym16,
+				.transform = transform_drudfin_noE_sym16,
+				.tfind = tfind_drudfin_noE_sym16,
 };
 
 Coordinate
-coord_nxopt31 = {
-	.index     = index_nxopt31,
-	.move      = move_nxopt31,
-	.max       = POW3TO7 * BINOM8ON4 * CLASSES_EOFBEPOS_16,
-	.base      = &coord_eofbepos_sym16,
-	.transform = transform_nxopt31,
-	.tfind     = tfind_nxopt31,
+		coord_nxopt31 = {
+				.index = index_nxopt31,
+				.move = move_nxopt31,
+				.max = POW3TO7 * BINOM8ON4 * CLASSES_EOFBEPOS_16,
+				.base = &coord_eofbepos_sym16,
+				.transform = transform_nxopt31,
+				.tfind = tfind_nxopt31,
 };
 
 /* Functions *****************************************************************/
@@ -174,11 +183,11 @@ index_nxopt31(Cube cube)
 	Trans t;
 	uint64_t a;
 	int coud, cp;
-	
+
 	t = sd_eofbepos_16.transtorep[coord_eofbepos.index(cube)];
 	coud = co_ttable[t][cube.coud];
-	cp   = cp_ttable[t][cube.cp];
-	a = (index_eofbepos_sym16(cube)*POW3TO7) + coud;
+	cp = cp_ttable[t][cube.cp];
+	a = (index_eofbepos_sym16(cube) * POW3TO7) + coud;
 
 	return a * BINOM8ON4 + coord_cpud_separate.index((Cube){.cp = cp});
 }
@@ -260,7 +269,7 @@ transform_drud_sym16(Trans t, uint64_t ind)
 {
 	uint64_t coud, eofbepos;
 
-	eofbepos = ind / POW3TO7; /* Assum trans fixes eofbepos */
+	eofbepos = ind / POW3TO7;						/* Assum trans fixes eofbepos */
 	coud = co_ttable[t][ind % POW3TO7]; /* Source is always coud */
 
 	return eofbepos * POW3TO7 + coud;
@@ -331,10 +340,10 @@ tfind_nxopt31(uint64_t ind, Trans *ret)
 
 /* Other functions ***********************************************************/
 
-void
-free_sd(SymData *sd)
+void free_sd(SymData *sd)
 {
-	if (sd->generated) {
+	if (sd->generated)
+	{
 		free(sd->class);
 		free(sd->unsym);
 		free(sd->transtorep);
@@ -353,12 +362,13 @@ gensym(SymData *sd)
 	if (sd->generated)
 		return;
 
-	sd->class      = malloc(sd->coord->max * sizeof(uint64_t));
-	sd->unsym      = malloc(sd->coord->max * sizeof(uint64_t));
+	sd->class = malloc(sd->coord->max * sizeof(uint64_t));
+	sd->unsym = malloc(sd->coord->max * sizeof(uint64_t));
 	sd->transtorep = malloc(sd->coord->max * sizeof(Trans));
-	sd->selfsim    = malloc(sd->coord->max * sizeof(uint64_t));
+	sd->selfsim = malloc(sd->coord->max * sizeof(uint64_t));
 
-	if (read_symdata_file(sd)) {
+	if (read_symdata_file(sd))
+	{
 		sd->generated = true;
 		return;
 	}
@@ -368,18 +378,21 @@ gensym(SymData *sd)
 	for (i = 0; i < sd->coord->max; i++)
 		sd->class[i] = sd->coord->max + 1;
 
-	for (i = 0; i < sd->coord->max; i++) {
-		if (sd->class[i] == sd->coord->max + 1) {
+	for (i = 0; i < sd->coord->max; i++)
+	{
+		if (sd->class[i] == sd->coord->max + 1)
+		{
 			sd->unsym[nreps] = i;
 			sd->transtorep[i] = uf;
 			sd->selfsim[nreps] = (uint64_t)0;
-			for (j = 0; j < sd->ntrans; j++) {
+			for (j = 0; j < sd->ntrans; j++)
+			{
 				t = sd->trans[j];
 				in = sd->transform(t, i);
 				sd->class[in] = nreps;
 				if (in == i)
 					sd->selfsim[nreps] |=
-					    ((uint64_t)1 << t);
+							((uint64_t)1 << t);
 				else
 					sd->transtorep[in] = inverse_trans(t);
 			}
@@ -388,9 +401,9 @@ gensym(SymData *sd)
 	}
 
 	sd->sym_coord->max = nreps;
-	sd->unsym          = realloc(sd->unsym,   nreps * sizeof(uint64_t));
-	sd->selfsim        = realloc(sd->selfsim, nreps * sizeof(uint64_t));
-	sd->generated      = true;
+	sd->unsym = realloc(sd->unsym, nreps * sizeof(uint64_t));
+	sd->selfsim = realloc(sd->selfsim, nreps * sizeof(uint64_t));
+	sd->generated = true;
 
 	fprintf(stderr, "Found %" PRIu64 " classes\n", nreps);
 
@@ -406,7 +419,7 @@ read_symdata_file(SymData *sd)
 	init_env();
 
 	FILE *f;
-	char fname[strlen(tabledir)+100];
+	char fname[strlen(tabledir) + 100];
 	uint64_t n = sd->coord->max, *sn = &sd->sym_coord->max;
 	bool r = true;
 
@@ -417,11 +430,11 @@ read_symdata_file(SymData *sd)
 	if ((f = fopen(fname, "rb")) == NULL)
 		return false;
 
-	r = r && fread(&sd->sym_coord->max, sizeof(uint64_t), 1,   f) == 1;
-	r = r && fread(sd->unsym,           sizeof(uint64_t), *sn, f) == *sn;
-	r = r && fread(sd->selfsim,         sizeof(uint64_t), *sn, f) == *sn;
-	r = r && fread(sd->class,           sizeof(uint64_t), n,   f) == n;
-	r = r && fread(sd->transtorep,      sizeof(Trans),    n,   f) == n;
+	r = r && fread(&sd->sym_coord->max, sizeof(uint64_t), 1, f) == 1;
+	r = r && fread(sd->unsym, sizeof(uint64_t), *sn, f) == *sn;
+	r = r && fread(sd->selfsim, sizeof(uint64_t), *sn, f) == *sn;
+	r = r && fread(sd->class, sizeof(uint64_t), n, f) == n;
+	r = r && fread(sd->transtorep, sizeof(Trans), n, f) == n;
 
 	fclose(f);
 	return r;
@@ -435,7 +448,7 @@ read_symc_moves_file(void)
 	Move m;
 	bool r = true;
 	FILE *f;
-	char fname[strlen(tabledir)+100];
+	char fname[strlen(tabledir) + 100];
 
 	strcpy(fname, tabledir);
 	strcat(fname, "/symc_moves");
@@ -443,16 +456,17 @@ read_symc_moves_file(void)
 	if ((f = fopen(fname, "rb")) == NULL)
 		return false;
 
-	for (m = 0; m < NMOVES; m++) {
+	for (m = 0; m < NMOVES; m++)
+	{
 		r = r && fread(move_cp_16[m], sizeof(uint64_t),
-		    CLASSES_CP_16, f) == CLASSES_CP_16;
+									 CLASSES_CP_16, f) == CLASSES_CP_16;
 		r = r && fread(move_eofbepos_16[m], sizeof(uint64_t),
-		    CLASSES_EOFBEPOS_16, f) == CLASSES_EOFBEPOS_16;
+									 CLASSES_EOFBEPOS_16, f) == CLASSES_EOFBEPOS_16;
 
 		r = r && fread(ttrep_move_cp_16[m], sizeof(Trans),
-		    CLASSES_CP_16, f) == CLASSES_CP_16;
+									 CLASSES_CP_16, f) == CLASSES_CP_16;
 		r = r && fread(ttrep_move_eofbepos_16[m], sizeof(Trans),
-		    CLASSES_EOFBEPOS_16, f) == CLASSES_EOFBEPOS_16;
+									 CLASSES_EOFBEPOS_16, f) == CLASSES_EOFBEPOS_16;
 	}
 
 	fclose(f);
@@ -467,7 +481,7 @@ read_symc_trans_file(void)
 	Trans t;
 	bool r = true;
 	FILE *f;
-	char fname[strlen(tabledir)+100];
+	char fname[strlen(tabledir) + 100];
 
 	strcpy(fname, tabledir);
 	strcat(fname, "/symc_trans");
@@ -475,13 +489,14 @@ read_symc_trans_file(void)
 	if ((f = fopen(fname, "rb")) == NULL)
 		return false;
 
-	for (t = 0; t < NTRANS; t++) {
+	for (t = 0; t < NTRANS; t++)
+	{
 		r = r && fread(trans_eofbepos[t], sizeof(int),
-		    POW2TO11*BINOM12ON4, f) == POW2TO11*BINOM12ON4;
+									 POW2TO11 * BINOM12ON4, f) == POW2TO11 * BINOM12ON4;
 		r = r && fread(trans_epud[t], sizeof(int),
-		    FACTORIAL8, f) == FACTORIAL8;
+									 FACTORIAL8, f) == FACTORIAL8;
 		r = r && fread(trans_cpud_separate[t], sizeof(int),
-		    BINOM8ON4, f) == BINOM8ON4;
+									 BINOM8ON4, f) == BINOM8ON4;
 	}
 
 	fclose(f);
@@ -494,7 +509,7 @@ write_symdata_file(SymData *sd)
 	init_env();
 
 	FILE *f;
-	char fname[strlen(tabledir)+100];
+	char fname[strlen(tabledir) + 100];
 	uint64_t n = sd->coord->max, *sn = &sd->sym_coord->max;
 	bool r = true;
 
@@ -505,11 +520,11 @@ write_symdata_file(SymData *sd)
 	if ((f = fopen(fname, "wb")) == NULL)
 		return false;
 
-	r = r && fwrite(&sd->sym_coord->max, sizeof(uint64_t), 1,   f) == 1;
-	r = r && fwrite(sd->unsym,           sizeof(uint64_t), *sn, f) == *sn;
-	r = r && fwrite(sd->selfsim,         sizeof(uint64_t), *sn, f) == *sn;
-	r = r && fwrite(sd->class,           sizeof(uint64_t), n,   f) == n;
-	r = r && fwrite(sd->transtorep,      sizeof(Trans),    n,   f) == n;
+	r = r && fwrite(&sd->sym_coord->max, sizeof(uint64_t), 1, f) == 1;
+	r = r && fwrite(sd->unsym, sizeof(uint64_t), *sn, f) == *sn;
+	r = r && fwrite(sd->selfsim, sizeof(uint64_t), *sn, f) == *sn;
+	r = r && fwrite(sd->class, sizeof(uint64_t), n, f) == n;
+	r = r && fwrite(sd->transtorep, sizeof(Trans), n, f) == n;
 
 	fclose(f);
 	return r;
@@ -523,7 +538,7 @@ write_symc_moves_file(void)
 	Move m;
 	bool r = true;
 	FILE *f;
-	char fname[strlen(tabledir)+100];
+	char fname[strlen(tabledir) + 100];
 
 	strcpy(fname, tabledir);
 	strcat(fname, "/symc_moves");
@@ -531,16 +546,17 @@ write_symc_moves_file(void)
 	if ((f = fopen(fname, "wb")) == NULL)
 		return false;
 
-	for (m = 0; m < NMOVES; m++) {
+	for (m = 0; m < NMOVES; m++)
+	{
 		r = r && fwrite(move_cp_16[m], sizeof(uint64_t),
-		    CLASSES_CP_16, f) == CLASSES_CP_16;
+										CLASSES_CP_16, f) == CLASSES_CP_16;
 		r = r && fwrite(move_eofbepos_16[m], sizeof(uint64_t),
-		    CLASSES_EOFBEPOS_16, f) == CLASSES_EOFBEPOS_16;
+										CLASSES_EOFBEPOS_16, f) == CLASSES_EOFBEPOS_16;
 
 		r = r && fwrite(ttrep_move_cp_16[m], sizeof(Trans),
-		    CLASSES_CP_16, f) == CLASSES_CP_16;
+										CLASSES_CP_16, f) == CLASSES_CP_16;
 		r = r && fwrite(ttrep_move_eofbepos_16[m], sizeof(Trans),
-		    CLASSES_EOFBEPOS_16, f) == CLASSES_EOFBEPOS_16;
+										CLASSES_EOFBEPOS_16, f) == CLASSES_EOFBEPOS_16;
 	}
 
 	fclose(f);
@@ -555,7 +571,7 @@ write_symc_trans_file(void)
 	Trans t;
 	bool r = true;
 	FILE *f;
-	char fname[strlen(tabledir)+100];
+	char fname[strlen(tabledir) + 100];
 
 	strcpy(fname, tabledir);
 	strcat(fname, "/symc_trans");
@@ -563,13 +579,14 @@ write_symc_trans_file(void)
 	if ((f = fopen(fname, "wb")) == NULL)
 		return false;
 
-	for (t = 0; t < NTRANS; t++) {
+	for (t = 0; t < NTRANS; t++)
+	{
 		r = r && fwrite(trans_eofbepos[t], sizeof(int),
-		    POW2TO11*BINOM12ON4, f) == POW2TO11*BINOM12ON4;
+										POW2TO11 * BINOM12ON4, f) == POW2TO11 * BINOM12ON4;
 		r = r && fwrite(trans_epud[t], sizeof(int),
-		    FACTORIAL8, f) == FACTORIAL8;
+										FACTORIAL8, f) == FACTORIAL8;
 		r = r && fwrite(trans_cpud_separate[t], sizeof(int),
-		    BINOM8ON4, f) == BINOM8ON4;
+										BINOM8ON4, f) == BINOM8ON4;
 	}
 
 	fclose(f);
@@ -585,22 +602,26 @@ init_symc_moves(void)
 	if (read_symc_moves_file())
 		return;
 
-	for (i = 0; i < CLASSES_CP_16; i++) {
+	for (i = 0; i < CLASSES_CP_16; i++)
+	{
 		ii = sd_cp_16.unsym[i];
-		for (j = 0; j < NMOVES; j++) {
+		for (j = 0; j < NMOVES; j++)
+		{
 			coo = sd_cp_16.coord->move(j, ii);
 			move_cp_16[j][i] = sd_cp_16.class[coo];
 			ttrep_move_cp_16[j][i] = sd_cp_16.transtorep[coo];
 		}
 	}
 
-	for (i = 0; i < CLASSES_EOFBEPOS_16; i++) {
+	for (i = 0; i < CLASSES_EOFBEPOS_16; i++)
+	{
 		ii = sd_eofbepos_16.unsym[i];
-		for (j = 0; j < NMOVES; j++) {
+		for (j = 0; j < NMOVES; j++)
+		{
 			coo = sd_eofbepos_16.coord->move(j, ii);
 			move_eofbepos_16[j][i] = sd_eofbepos_16.class[coo];
 			ttrep_move_eofbepos_16[j][i] =
-			    sd_eofbepos_16.transtorep[coo];
+					sd_eofbepos_16.transtorep[coo];
 		}
 	}
 
@@ -608,13 +629,12 @@ init_symc_moves(void)
 		fprintf(stderr, "Error writing SymMoves file\n");
 }
 
-void
-init_symc_trans(void)
+void init_symc_trans(void)
 {
 	uint64_t i;
 	int j, cp;
 	int epe[4] = {FR, FL, BL, BR};
-	int a[12] = { [8] = 8, [9] = 9, [10] = 10, [11] = 11 };
+	int a[12] = {[8] = 8, [9] = 9, [10] = 10, [11] = 11};
 	Cube c;
 	CubeArray *arr, *aux;
 	Trans t;
@@ -622,28 +642,32 @@ init_symc_trans(void)
 	if (read_symc_trans_file())
 		return;
 
-	for (i = 0; i < POW2TO11*BINOM12ON4; i++) {
-		for (j = 0; j < 16; j++) {
+	for (i = 0; i < POW2TO11 * BINOM12ON4; i++)
+	{
+		for (j = 0; j < 16; j++)
+		{
 			t = trans_group_udfix[j];
 
 			arr = new_cubearray((Cube){0}, pf_edges);
 			int_to_sum_zero_array(i % POW2TO11, 2, 12, arr->eofb);
-			epos_to_compatible_ep((i / POW2TO11)*24, arr->ep, epe);
+			epos_to_compatible_ep((i / POW2TO11) * 24, arr->ep, epe);
 			fix_eorleoud(arr);
 			c = arrays_to_cube(arr, pf_edges);
 			free_cubearray(arr, pf_edges);
 
 			c = apply_trans(t, c);
-			trans_eofbepos[t][i] = (c.epose/24)*POW2TO11 + c.eofb;
+			trans_eofbepos[t][i] = (c.epose / 24) * POW2TO11 + c.eofb;
 		}
 	}
 
 	aux = malloc(sizeof(CubeArray));
 	aux->ep = a;
-	for (i = 0; i < FACTORIAL8; i++) {
+	for (i = 0; i < FACTORIAL8; i++)
+	{
 		index_to_perm(i, 8, a);
 		c = arrays_to_cube(aux, pf_ep);
-		for (j = 0; j < 16; j++) {
+		for (j = 0; j < 16; j++)
+		{
 			t = trans_group_udfix[j];
 			arr = new_cubearray(apply_trans(t, c), pf_ep);
 			trans_epud[t][i] = perm_to_index(arr->ep, 8);
@@ -652,12 +676,14 @@ init_symc_trans(void)
 	}
 	free(aux);
 
-	for (i = 0; i < BINOM8ON4; i++) {
+	for (i = 0; i < BINOM8ON4; i++)
+	{
 		cp = cpud_separate_ant[i];
-		for (j = 0; j < 16; j++) {
+		for (j = 0; j < 16; j++)
+		{
 			t = trans_group_udfix[j];
 			trans_cpud_separate[t][i] =
-			    cpud_separate_ind[cp_ttable[t][cp]];
+					cpud_separate_ind[cp_ttable[t][cp]];
 		}
 	}
 
@@ -665,8 +691,7 @@ init_symc_trans(void)
 		fprintf(stderr, "Error writing SymTrans file\n");
 }
 
-void
-init_symcoord(void)
+void init_symcoord(void)
 {
 	int i;
 
@@ -684,4 +709,3 @@ init_symcoord(void)
 
 	init_symc_moves();
 }
-

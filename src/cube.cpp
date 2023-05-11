@@ -2,31 +2,33 @@
 
 /* Local functions ***********************************************************/
 
-static void             init_inverse(void);
-static bool             read_invtables_file(void);
-static bool             write_invtables_file(void);
+static void init_inverse(void);
+static bool read_invtables_file(void);
+static bool write_invtables_file(void);
 
 /* Tables ********************************************************************/
 
-static uint16_t         eo_invtable_e[POW2TO11][BINOM12ON4*FACTORIAL4];
-static uint16_t         eo_invtable_s[POW2TO11][BINOM12ON4*FACTORIAL4];
-static uint16_t         eo_invtable_m[POW2TO11][BINOM12ON4*FACTORIAL4];
-static uint16_t         co_invtable[POW3TO7][FACTORIAL8];
-static uint16_t         cp_invtable[FACTORIAL8];
-static uint16_t         cpos_invtable[FACTORIAL6];
+static uint16_t eo_invtable_e[POW2TO11][BINOM12ON4 * FACTORIAL4];
+static uint16_t eo_invtable_s[POW2TO11][BINOM12ON4 * FACTORIAL4];
+static uint16_t eo_invtable_m[POW2TO11][BINOM12ON4 * FACTORIAL4];
+static uint16_t co_invtable[POW3TO7][FACTORIAL8];
+static uint16_t cp_invtable[FACTORIAL8];
+static uint16_t cpos_invtable[FACTORIAL6];
 
 /* Functions implementation **************************************************/
 
-int
-array_ep_to_epos(int *ep, int *ss)
+int array_ep_to_epos(int *ep, int *ss)
 {
 	int epos[12] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 	int eps[4];
 	int i, j, is;
 
-	for (i = 0, is = 0; i < 12; i++) {
-		for (j = 0; j < 4; j++) {
-			if (ep[i] == ss[j]) {
+	for (i = 0, is = 0; i < 12; i++)
+	{
+		for (j = 0; j < 4; j++)
+		{
+			if (ep[i] == ss[j])
+			{
 				eps[is++] = j;
 				epos[i] = 1;
 			}
@@ -34,13 +36,12 @@ array_ep_to_epos(int *ep, int *ss)
 	}
 
 	for (i = 0; i < 4; i++)
-		swap(&epos[ss[i]], &epos[i+8]);
+		swap(&epos[ss[i]], &epos[i + 8]);
 
 	return 24 * subset_to_index(epos, 12, 4) + perm_to_index(eps, 4);
 }
 
-Cube
-arrays_to_cube(CubeArray *arr, PieceFilter f)
+Cube arrays_to_cube(CubeArray *arr, PieceFilter f)
 {
 	Cube ret = {0};
 
@@ -74,8 +75,7 @@ arrays_to_cube(CubeArray *arr, PieceFilter f)
 	return ret;
 }
 
-Cube
-compose_filtered(Cube c2, Cube c1, PieceFilter f)
+Cube compose_filtered(Cube c2, Cube c1, PieceFilter f)
 {
 	CubeArray *arr = new_cubearray(c2, f);
 	Cube ret;
@@ -86,8 +86,7 @@ compose_filtered(Cube c2, Cube c1, PieceFilter f)
 	return ret;
 }
 
-void
-cube_to_arrays(Cube cube, CubeArray *arr, PieceFilter f)
+void cube_to_arrays(Cube cube, CubeArray *arr, PieceFilter f)
 {
 	int i;
 
@@ -99,12 +98,12 @@ cube_to_arrays(Cube cube, CubeArray *arr, PieceFilter f)
 		for (i = 0; i < 12; i++)
 			arr->ep[i] = -1;
 
-	if (f.epose) 
-		epos_to_partial_ep(cube.epose, arr->ep, epe_solved); 
-	if (f.eposs) 
-		epos_to_partial_ep(cube.eposs, arr->ep, eps_solved); 
+	if (f.epose)
+		epos_to_partial_ep(cube.epose, arr->ep, epe_solved);
+	if (f.eposs)
+		epos_to_partial_ep(cube.eposs, arr->ep, eps_solved);
 	if (f.eposm)
-		epos_to_partial_ep(cube.eposm, arr->ep, epm_solved); 
+		epos_to_partial_ep(cube.eposm, arr->ep, epm_solved);
 	if (f.eofb)
 		int_to_sum_zero_array(cube.eofb, 2, 12, arr->eofb);
 	if (f.eorl)
@@ -123,8 +122,7 @@ cube_to_arrays(Cube cube, CubeArray *arr, PieceFilter f)
 		index_to_perm(cube.cpos, 6, arr->cpos);
 }
 
-void
-epos_to_compatible_ep(int epos, int *ep, int *ss)
+void epos_to_compatible_ep(int epos, int *ep, int *ss)
 {
 	int i, j, k, other[8];
 	bool flag;
@@ -134,21 +132,21 @@ epos_to_compatible_ep(int epos, int *ep, int *ss)
 
 	epos_to_partial_ep(epos, ep, ss);
 
-	for (i = 0, j = 0; i < 12; i++) {
+	for (i = 0, j = 0; i < 12; i++)
+	{
 		flag = false;
 		for (k = 0; k < 4; k++)
 			flag = flag || (i == ss[k]);
 		if (!flag)
 			other[j++] = i;
 	}
-		
+
 	for (i = 0, j = 0; i < 12; i++)
 		if (ep[i] == -1)
 			ep[i] = other[j++];
 }
 
-void
-epos_to_partial_ep(int epos, int *ep, int *ss)
+void epos_to_partial_ep(int epos, int *ep, int *ss)
 {
 	int i, is, eposs[12], eps[4];
 
@@ -156,67 +154,78 @@ epos_to_partial_ep(int epos, int *ep, int *ss)
 	index_to_subset(epos / FACTORIAL4, 12, 4, eposs);
 
 	for (i = 0; i < 4; i++)
-		swap(&eposs[ss[i]], &eposs[i+8]);
+		swap(&eposs[ss[i]], &eposs[i + 8]);
 
 	for (i = 0, is = 0; i < 12; i++)
 		if (eposs[i])
 			ep[i] = ss[eps[is++]];
 }
 
-void
-fix_eorleoud(CubeArray *arr)
+void fix_eorleoud(CubeArray *arr)
 {
 	int i;
 
-	for (i = 0; i < 12; i++) {
+	for (i = 0; i < 12; i++)
+	{
 		if ((edge_slice(i) == 0 && edge_slice(arr->ep[i]) != 0) ||
-		    (edge_slice(i) != 0 && edge_slice(arr->ep[i]) == 0)) {
+				(edge_slice(i) != 0 && edge_slice(arr->ep[i]) == 0))
+		{
 			arr->eorl[i] = 1 - arr->eofb[i];
-		} else {
+		}
+		else
+		{
 			arr->eorl[i] = arr->eofb[i];
 		}
 
 		if ((edge_slice(i) == 2 && edge_slice(arr->ep[i]) != 2) ||
-		    (edge_slice(i) != 2 && edge_slice(arr->ep[i]) == 2)) {
+				(edge_slice(i) != 2 && edge_slice(arr->ep[i]) == 2))
+		{
 			arr->eoud[i] = 1 - arr->eofb[i];
-		} else {
+		}
+		else
+		{
 			arr->eoud[i] = arr->eofb[i];
 		}
 	}
 }
 
-void
-fix_cofbcorl(CubeArray *arr)
+void fix_cofbcorl(CubeArray *arr)
 {
 	int i;
 
-	for (i = 0; i < 8; i++) {
-		if (i % 2 == arr->cp[i] % 2) {
+	for (i = 0; i < 8; i++)
+	{
+		if (i % 2 == arr->cp[i] % 2)
+		{
 			arr->cofb[i] = arr->coud[i];
 			arr->corl[i] = arr->coud[i];
-		} else {
-			if (arr->cp[i] % 2 == 0) {
-				arr->cofb[i] = (arr->coud[i]+1)%3;
-				arr->corl[i] = (arr->coud[i]+2)%3;
-			} else {
-				arr->cofb[i] = (arr->coud[i]+2)%3;
-				arr->corl[i] = (arr->coud[i]+1)%3;
+		}
+		else
+		{
+			if (arr->cp[i] % 2 == 0)
+			{
+				arr->cofb[i] = (arr->coud[i] + 1) % 3;
+				arr->corl[i] = (arr->coud[i] + 2) % 3;
+			}
+			else
+			{
+				arr->cofb[i] = (arr->coud[i] + 2) % 3;
+				arr->corl[i] = (arr->coud[i] + 1) % 3;
 			}
 		}
 	}
 }
 
-Cube
-fourval_to_cube(int eofb, int ep, int coud, int cp)
+Cube fourval_to_cube(int eofb, int ep, int coud, int cp)
 {
 	CubeArray *arr;
 
 	arr = new_cubearray((Cube){0}, pf_all);
 
 	index_to_perm(ep, 12, arr->ep);
-	index_to_perm(cp,  8, arr->cp);
+	index_to_perm(cp, 8, arr->cp);
 	int_to_sum_zero_array(eofb, 2, 12, arr->eofb);
-	int_to_sum_zero_array(coud, 3,  8, arr->coud);
+	int_to_sum_zero_array(coud, 3, 8, arr->coud);
 
 	/* fix parity */
 	if (perm_sign(arr->ep, 12) != perm_sign(arr->cp, 8))
@@ -228,8 +237,7 @@ fourval_to_cube(int eofb, int ep, int coud, int cp)
 	return arrays_to_cube(arr, pf_all);
 }
 
-void
-free_cubearray(CubeArray *arr, PieceFilter f)
+void free_cubearray(CubeArray *arr, PieceFilter f)
 {
 	if (f.epose || f.eposs || f.eposm)
 		free(arr->ep);
@@ -253,8 +261,7 @@ free_cubearray(CubeArray *arr, PieceFilter f)
 	free(arr);
 }
 
-Cube
-move_via_arrays(CubeArray *arr, Cube c, PieceFilter f)
+Cube move_via_arrays(CubeArray *arr, Cube c, PieceFilter f)
 {
 	CubeArray *arrc = new_cubearray(c, f);
 	Cube ret;
@@ -262,17 +269,20 @@ move_via_arrays(CubeArray *arr, Cube c, PieceFilter f)
 	if (f.epose || f.eposs || f.eposm)
 		apply_permutation(arr->ep, arrc->ep, 12);
 
-	if (f.eofb) {
+	if (f.eofb)
+	{
 		apply_permutation(arr->ep, arrc->eofb, 12);
 		sum_arrays_mod(arr->eofb, arrc->eofb, 12, 2);
 	}
 
-	if (f.eorl) {
+	if (f.eorl)
+	{
 		apply_permutation(arr->ep, arrc->eorl, 12);
 		sum_arrays_mod(arr->eorl, arrc->eorl, 12, 2);
 	}
 
-	if (f.eoud) {
+	if (f.eoud)
+	{
 		apply_permutation(arr->ep, arrc->eoud, 12);
 		sum_arrays_mod(arr->eoud, arrc->eoud, 12, 2);
 	}
@@ -280,17 +290,20 @@ move_via_arrays(CubeArray *arr, Cube c, PieceFilter f)
 	if (f.cp)
 		apply_permutation(arr->cp, arrc->cp, 8);
 
-	if (f.coud) {
+	if (f.coud)
+	{
 		apply_permutation(arr->cp, arrc->coud, 8);
 		sum_arrays_mod(arr->coud, arrc->coud, 8, 3);
 	}
 
-	if (f.corl) {
+	if (f.corl)
+	{
 		apply_permutation(arr->cp, arrc->corl, 8);
 		sum_arrays_mod(arr->corl, arrc->corl, 8, 3);
 	}
 
-	if (f.cofb) {
+	if (f.cofb)
+	{
 		apply_permutation(arr->cp, arrc->cofb, 8);
 		sum_arrays_mod(arr->cofb, arrc->cofb, 8, 3);
 	}
@@ -310,7 +323,7 @@ new_cubearray(Cube cube, PieceFilter f)
 	CubeArray *arr = malloc(sizeof(CubeArray));
 
 	if (f.epose || f.eposs || f.eposm)
-		arr->ep   = malloc(12 * sizeof(int));
+		arr->ep = malloc(12 * sizeof(int));
 	if (f.eofb)
 		arr->eofb = malloc(12 * sizeof(int));
 	if (f.eorl)
@@ -318,23 +331,22 @@ new_cubearray(Cube cube, PieceFilter f)
 	if (f.eoud)
 		arr->eoud = malloc(12 * sizeof(int));
 	if (f.cp)
-		arr->cp   = malloc(8  * sizeof(int));
+		arr->cp = malloc(8 * sizeof(int));
 	if (f.coud)
-		arr->coud = malloc(8  * sizeof(int));
+		arr->coud = malloc(8 * sizeof(int));
 	if (f.corl)
-		arr->corl = malloc(8  * sizeof(int));
+		arr->corl = malloc(8 * sizeof(int));
 	if (f.cofb)
-		arr->cofb = malloc(8  * sizeof(int));
+		arr->cofb = malloc(8 * sizeof(int));
 	if (f.cpos)
-		arr->cpos = malloc(6  * sizeof(int));
+		arr->cpos = malloc(6 * sizeof(int));
 
 	cube_to_arrays(cube, arr, f);
 
 	return arr;
 }
 
-Cube
-admissible_ep(Cube cube, PieceFilter f)
+Cube admissible_ep(Cube cube, PieceFilter f)
 {
 	CubeArray *arr = new_cubearray(cube, f);
 	Cube ret;
@@ -345,8 +357,10 @@ admissible_ep(Cube cube, PieceFilter f)
 		if (arr->ep[i] != -1)
 			used[arr->ep[i]] = true;
 
-	for (i = 0, j = 0; i < 12; i++) {
-		for ( ; j < 11 && used[j]; j++);
+	for (i = 0, j = 0; i < 12; i++)
+	{
+		for (; j < 11 && used[j]; j++)
+			;
 		if (arr->ep[i] == -1)
 			arr->ep[i] = j++;
 	}
@@ -357,14 +371,13 @@ admissible_ep(Cube cube, PieceFilter f)
 	return ret;
 }
 
-Cube
-compose(Cube c2, Cube c1)
+Cube compose(Cube c2, Cube c1)
 {
 	return compose_filtered(c2, c1, pf_all);
 }
 
-int
-edge_slice(Edge e) {
+int edge_slice(Edge e)
+{
 	if (e < 0 || e > 11)
 		return -1;
 
@@ -376,20 +389,18 @@ edge_slice(Edge e) {
 	return 2;
 }
 
-bool
-equal(Cube c1, Cube c2)
+bool equal(Cube c1, Cube c2)
 {
-	return c1.eofb  == c2.eofb  &&
-	       c1.epose == c2.epose &&
-	       c1.eposs == c2.eposs &&
-	       c1.eposm == c2.eposm &&
-	       c1.coud  == c2.coud  &&
-	       c1.cp    == c2.cp    &&
-	       c1.cpos  == c2.cpos;
+	return c1.eofb == c2.eofb &&
+				 c1.epose == c2.epose &&
+				 c1.eposs == c2.eposs &&
+				 c1.eposm == c2.eposm &&
+				 c1.coud == c2.coud &&
+				 c1.cp == c2.cp &&
+				 c1.cpos == c2.cpos;
 }
 
-Cube
-inverse_cube(Cube cube)
+Cube inverse_cube(Cube cube)
 {
 	CubeArray inv;
 	Cube ret;
@@ -401,15 +412,15 @@ inverse_cube(Cube cube)
 	ret = arrays_to_cube(&inv, pf_ep);
 
 	ret.eofb = ((int)eo_invtable_e[cube.eofb][cube.epose]) |
-		   ((int)eo_invtable_m[cube.eofb][cube.eposm]) |
-		   ((int)eo_invtable_s[cube.eofb][cube.eposs]);
+						 ((int)eo_invtable_m[cube.eofb][cube.eposm]) |
+						 ((int)eo_invtable_s[cube.eofb][cube.eposs]);
 	ret.eorl = ((int)eo_invtable_e[cube.eorl][cube.epose]) |
-		   ((int)eo_invtable_m[cube.eorl][cube.eposm]) |
-		   ((int)eo_invtable_s[cube.eorl][cube.eposs]);
+						 ((int)eo_invtable_m[cube.eorl][cube.eposm]) |
+						 ((int)eo_invtable_s[cube.eorl][cube.eposs]);
 	ret.eoud = ((int)eo_invtable_e[cube.eoud][cube.epose]) |
-		   ((int)eo_invtable_m[cube.eoud][cube.eposm]) |
-		   ((int)eo_invtable_s[cube.eoud][cube.eposs]);
-	ret.cp   = cp_invtable[cube.cp];
+						 ((int)eo_invtable_m[cube.eoud][cube.eposm]) |
+						 ((int)eo_invtable_s[cube.eoud][cube.eposs]);
+	ret.cp = cp_invtable[cube.cp];
 	ret.cpos = cpos_invtable[cube.cpos];
 	ret.coud = co_invtable[cube.coud][cube.cp];
 	ret.corl = co_invtable[cube.corl][cube.cp];
@@ -418,8 +429,8 @@ inverse_cube(Cube cube)
 	return ret;
 }
 
-bool
-is_admissible(Cube cube) {
+bool is_admissible(Cube cube)
+{
 
 	/* TODO: this should check consistency of different orientations */
 	/* check also that centers are opposite and admissible */
@@ -428,26 +439,24 @@ is_admissible(Cube cube) {
 	int parity;
 	bool perm;
 
-	perm   = is_perm(a->ep,  12)  &&
-	         is_perm(a->cp,   8)  &&
-	         is_perm(a->cpos, 6);
-	parity = perm_sign(a->ep,  12) +
-	         perm_sign(a->cp,   8) +
-	         perm_sign(a->cpos, 6);
+	perm = is_perm(a->ep, 12) &&
+				 is_perm(a->cp, 8) &&
+				 is_perm(a->cpos, 6);
+	parity = perm_sign(a->ep, 12) +
+					 perm_sign(a->cp, 8) +
+					 perm_sign(a->cpos, 6);
 
 	free_cubearray(a, pf_all);
 
 	return perm && parity % 2 == 0;
 }
 
-bool
-is_solved(Cube cube)
+bool is_solved(Cube cube)
 {
 	return equal(cube, (Cube){0});
 }
 
-bool
-is_block_solved(Cube cube, Block block)
+bool is_block_solved(Cube cube, Block block)
 {
 	int i;
 
@@ -464,56 +473,65 @@ is_block_solved(Cube cube, Block block)
 	return true;
 }
 
-bool
-is_solved_center(Cube cube, Center c)
+bool is_solved_center(Cube cube, Center c)
 {
 	return what_center_at(cube, c) == c;
 }
 
-bool
-is_solved_corner(Cube cube, Corner c)
+bool is_solved_corner(Cube cube, Corner c)
 {
 	return what_corner_at(cube, c) == c &&
-	       what_orientation_corner(cube.coud, c);
+				 what_orientation_corner(cube.coud, c);
 }
 
-bool
-is_solved_edge(Cube cube, Edge e)
+bool is_solved_edge(Cube cube, Edge e)
 {
 	return what_edge_at(cube, e) == e &&
-	       what_orientation_edge(cube.eofb, e);
+				 what_orientation_edge(cube.eofb, e);
 }
 
-int
-piece_orientation(Cube cube, int piece, char *orientation)
+int piece_orientation(Cube cube, int piece, char *orientation)
 {
 	int arr[12], n, b, x;
 
-	if (!strcmp(orientation, "eofb")) {
+	if (!strcmp(orientation, "eofb"))
+	{
 		x = cube.eofb;
 		n = 12;
 		b = 2;
-	} else if (!strcmp(orientation, "eorl")) {
+	}
+	else if (!strcmp(orientation, "eorl"))
+	{
 		x = cube.eorl;
 		n = 12;
 		b = 2;
-	} else if (!strcmp(orientation, "eoud")) {
+	}
+	else if (!strcmp(orientation, "eoud"))
+	{
 		x = cube.eoud;
 		n = 12;
 		b = 2;
-	} else if (!strcmp(orientation, "coud")) {
+	}
+	else if (!strcmp(orientation, "coud"))
+	{
 		x = cube.coud;
 		n = 8;
 		b = 3;
-	} else if (!strcmp(orientation, "corl")) {
+	}
+	else if (!strcmp(orientation, "corl"))
+	{
 		x = cube.corl;
 		n = 8;
 		b = 3;
-	} else if (!strcmp(orientation, "cofb")) {
+	}
+	else if (!strcmp(orientation, "cofb"))
+	{
 		x = cube.cofb;
 		n = 8;
 		b = 3;
-	} else {
+	}
+	else
+	{
 		return -1;
 	}
 
@@ -524,25 +542,16 @@ piece_orientation(Cube cube, int piece, char *orientation)
 	return -1;
 }
 
-void
-print_cube(Cube cube)
+void print_cube(Cube cube)
 {
 	static char edge_string[12][7] = {
-		[UF] = "UF", [UL] = "UL", [UB] = "UB", [UR] = "UR",
-		[DF] = "DF", [DL] = "DL", [DB] = "DB", [DR] = "DR",
-		[FR] = "FR", [FL] = "FL", [BL] = "BL", [BR] = "BR"
-	};
+			[UF] = "UF", [UL] = "UL", [UB] = "UB", [UR] = "UR", [DF] = "DF", [DL] = "DL", [DB] = "DB", [DR] = "DR", [FR] = "FR", [FL] = "FL", [BL] = "BL", [BR] = "BR"};
 
 	static char corner_string[8][7] = {
-		[UFR] = "UFR", [UFL] = "UFL", [UBL] = "UBL", [UBR] = "UBR",
-		[DFR] = "DFR", [DFL] = "DFL", [DBL] = "DBL", [DBR] = "DBR"
-	};
+			[UFR] = "UFR", [UFL] = "UFL", [UBL] = "UBL", [UBR] = "UBR", [DFR] = "DFR", [DFL] = "DFL", [DBL] = "DBL", [DBR] = "DBR"};
 
 	static char center_string[6][7] = {
-		[U_center] = "U", [D_center] = "D",
-		[R_center] = "R", [L_center] = "L", 
-		[F_center] = "F", [B_center] = "B"
-	};
+			[U_center] = "U", [D_center] = "D", [R_center] = "R", [L_center] = "L", [F_center] = "F", [B_center] = "B"};
 
 	for (int i = 0; i < 12; i++)
 		printf(" %s ", edge_string[what_edge_at(cube, i)]);
@@ -574,8 +583,10 @@ what_center_at(Cube cube, Center c)
 	static unsigned int ui;
 	static CubeArray *arr;
 
-	if (!initialized) {
-		for (ui = 0; ui < FACTORIAL6; ui++) {
+	if (!initialized)
+	{
+		for (ui = 0; ui < FACTORIAL6; ui++)
+		{
 			arr = new_cubearray((Cube){.cpos = ui}, pf_cpos);
 			for (i = 0; i < 6; i++)
 				aux[ui][i] = arr->cpos[i];
@@ -598,8 +609,10 @@ what_corner_at(Cube cube, Corner c)
 	static bool initialized = false;
 	static Corner aux[FACTORIAL8][8];
 
-	if (!initialized) {
-		for (ui = 0; ui < FACTORIAL8; ui++) {
+	if (!initialized)
+	{
+		for (ui = 0; ui < FACTORIAL8; ui++)
+		{
 			arr = new_cubearray((Cube){.cp = ui}, pf_cp);
 			for (i = 0; i < 8; i++)
 				aux[ui][i] = arr->cp[i];
@@ -612,8 +625,7 @@ what_corner_at(Cube cube, Corner c)
 	return aux[cube.cp][c];
 }
 
-Edge
-what_edge_at(Cube cube, Edge e)
+Edge what_edge_at(Cube cube, Edge e)
 {
 	Edge ret;
 	CubeArray *arr = new_cubearray(cube, pf_ep);
@@ -624,16 +636,17 @@ what_edge_at(Cube cube, Edge e)
 	return ret;
 }
 
-int
-what_orientation_corner(int co, Corner c)
+int what_orientation_corner(int co, Corner c)
 {
 	static bool initialized = false;
 	static int auxlast[POW3TO7];
 	static int auxarr[8];
 	static unsigned int ui;
 
-	if (!initialized) {
-		for (ui = 0; ui < POW3TO7; ui++) {
+	if (!initialized)
+	{
+		for (ui = 0; ui < POW3TO7; ui++)
+		{
 			int_to_sum_zero_array(ui, 3, 8, auxarr);
 			auxlast[ui] = auxarr[7];
 		}
@@ -647,16 +660,17 @@ what_orientation_corner(int co, Corner c)
 		return auxlast[co];
 }
 
-int
-what_orientation_edge(int eo, Edge e)
+int what_orientation_edge(int eo, Edge e)
 {
 	static bool initialized = false;
 	static int auxlast[POW2TO11];
 	static int auxarr[12];
 	static unsigned int ui;
 
-	if (!initialized) {
-		for (ui = 0; ui < POW2TO11; ui++) {
+	if (!initialized)
+	{
+		for (ui = 0; ui < POW2TO11; ui++)
+		{
 			int_to_sum_zero_array(ui, 2, 12, auxarr);
 			auxlast[ui] = auxarr[11];
 		}
@@ -679,8 +693,10 @@ where_is_center(Cube cube, Center c)
 	static unsigned int ui;
 	static CubeArray *arr;
 
-	if (!initialized) {
-		for (ui = 0; ui < FACTORIAL6; ui++) {
+	if (!initialized)
+	{
+		for (ui = 0; ui < FACTORIAL6; ui++)
+		{
 			arr = new_cubearray((Cube){.cpos = ui}, pf_cpos);
 			for (i = 0; i < 6; i++)
 				aux[ui][arr->cpos[i]] = i;
@@ -702,8 +718,10 @@ where_is_corner(Cube cube, Corner c)
 	static unsigned int ui;
 	static CubeArray *arr;
 
-	if (!initialized) {
-		for (ui = 0; ui < FACTORIAL8; ui++) {
+	if (!initialized)
+	{
+		for (ui = 0; ui < FACTORIAL8; ui++)
+		{
 			arr = new_cubearray((Cube){.cp = ui}, pf_cp);
 			for (i = 0; i < 8; i++)
 				aux[ui][arr->cp[i]] = i;
@@ -715,23 +733,24 @@ where_is_corner(Cube cube, Corner c)
 	return aux[cube.cp][c];
 }
 
-Edge
-where_is_edge(Cube c, Edge e)
+Edge where_is_edge(Cube c, Edge e)
 {
 	int r0, r1, r2;
 
 	static bool initialized = false;
-	static int aux[3][BINOM12ON4*FACTORIAL4][12];
+	static int aux[3][BINOM12ON4 * FACTORIAL4][12];
 	static int i, j;
 	static unsigned int ui;
 	static CubeArray *arr;
 
-	if (!initialized) {
-		for (ui = 0; ui < BINOM12ON4*FACTORIAL4; ui++) {
+	if (!initialized)
+	{
+		for (ui = 0; ui < BINOM12ON4 * FACTORIAL4; ui++)
+		{
 			for (i = 0; i < 3; i++)
 				for (j = 0; j < 12; j++)
 					aux[i][ui][j] = -1;
-				
+
 			arr = new_cubearray((Cube){.epose = ui}, pf_e);
 			for (i = 0; i < 12; i++)
 				if (edge_slice(arr->ep[i]) == 0)
@@ -766,7 +785,7 @@ read_invtables_file(void)
 	init_env();
 
 	FILE *f;
-	char fname[strlen(tabledir)+20];
+	char fname[strlen(tabledir) + 20];
 	int b;
 	unsigned int ui, meeo, meco, mecp, mecpos;
 	bool r;
@@ -779,22 +798,24 @@ read_invtables_file(void)
 
 	b = sizeof(uint16_t);
 	r = true;
-	meeo = BINOM12ON4*FACTORIAL4;
+	meeo = BINOM12ON4 * FACTORIAL4;
 	meco = FACTORIAL8;
 	mecp = FACTORIAL8;
 	mecpos = FACTORIAL6;
 
-	for (ui = 0; ui < POW2TO11; ui++) {
+	for (ui = 0; ui < POW2TO11; ui++)
+	{
 		r = r && fread(eo_invtable_e[ui], b, meeo, f) == meeo;
 		r = r && fread(eo_invtable_m[ui], b, meeo, f) == meeo;
 		r = r && fread(eo_invtable_s[ui], b, meeo, f) == meeo;
 	}
 
-	for (ui = 0; ui < POW3TO7; ui++) {
+	for (ui = 0; ui < POW3TO7; ui++)
+	{
 		r = r && fread(co_invtable[ui], b, meco, f) == meco;
 	}
 
-	r = r && fread(cp_invtable,   b, mecp,   f) == mecp;
+	r = r && fread(cp_invtable, b, mecp, f) == mecp;
 	r = r && fread(cpos_invtable, b, mecpos, f) == mecpos;
 
 	fclose(f);
@@ -807,7 +828,7 @@ write_invtables_file(void)
 	init_env();
 
 	FILE *f;
-	char fname[strlen(tabledir)+20];
+	char fname[strlen(tabledir) + 20];
 	unsigned int ui, meeo, meco, mecp, mecpos;
 	int b;
 	bool r;
@@ -820,30 +841,31 @@ write_invtables_file(void)
 
 	b = sizeof(uint16_t);
 	r = true;
-	meeo = BINOM12ON4*FACTORIAL4;
+	meeo = BINOM12ON4 * FACTORIAL4;
 	meco = FACTORIAL8;
 	mecp = FACTORIAL8;
 	mecpos = FACTORIAL6;
 
-	for (ui = 0; ui < POW2TO11; ui++) {
+	for (ui = 0; ui < POW2TO11; ui++)
+	{
 		r = r && fwrite(eo_invtable_e[ui], b, meeo, f) == meeo;
 		r = r && fwrite(eo_invtable_m[ui], b, meeo, f) == meeo;
 		r = r && fwrite(eo_invtable_s[ui], b, meeo, f) == meeo;
 	}
 
-	for (ui = 0; ui < POW3TO7; ui++) {
+	for (ui = 0; ui < POW3TO7; ui++)
+	{
 		r = r && fwrite(co_invtable[ui], b, meco, f) == meco;
 	}
 
-	r = r && fwrite(cp_invtable,   b, mecp,   f) == mecp;
+	r = r && fwrite(cp_invtable, b, mecp, f) == mecp;
 	r = r && fwrite(cpos_invtable, b, mecpos, f) == mecpos;
 
 	fclose(f);
 	return r;
 }
 
-void
-init_inverse(void)
+void init_inverse(void)
 {
 	static bool initialized = false;
 	if (initialized)
@@ -863,9 +885,11 @@ init_inverse(void)
 	aux = new_cubearray((Cube){0}, pf_all);
 	inv = new_cubearray((Cube){0}, pf_all);
 
-	for (ui = 0; ui < POW2TO11; ui++) {
+	for (ui = 0; ui < POW2TO11; ui++)
+	{
 		int_to_sum_zero_array(ui, 2, 12, eoaux);
-		for (uj = 0; uj < BINOM12ON4*FACTORIAL4; uj++) {
+		for (uj = 0; uj < BINOM12ON4 * FACTORIAL4; uj++)
+		{
 			for (j = 0; j < 12; j++)
 				eoinv[j] = 0;
 			c = (Cube){.epose = uj, .eposm = 0, .eposs = 0};
@@ -873,8 +897,8 @@ init_inverse(void)
 			eoinv[FL] = eoaux[where_is_edge(c, FL)];
 			eoinv[BL] = eoaux[where_is_edge(c, BL)];
 			eoinv[BR] = eoaux[where_is_edge(c, BR)];
-			eo_invtable_e[ui][uj] = digit_array_to_int(eoinv,11,2);
- 
+			eo_invtable_e[ui][uj] = digit_array_to_int(eoinv, 11, 2);
+
 			for (j = 0; j < 12; j++)
 				eoinv[j] = 0;
 			c = (Cube){.epose = 0, .eposm = uj, .eposs = 0};
@@ -882,8 +906,8 @@ init_inverse(void)
 			eoinv[UB] = eoaux[where_is_edge(c, UB)];
 			eoinv[DF] = eoaux[where_is_edge(c, DF)];
 			eoinv[DB] = eoaux[where_is_edge(c, DB)];
-			eo_invtable_m[ui][uj] = digit_array_to_int(eoinv,11,2);
- 
+			eo_invtable_m[ui][uj] = digit_array_to_int(eoinv, 11, 2);
+
 			for (j = 0; j < 12; j++)
 				eoinv[j] = 0;
 			c = (Cube){.epose = 0, .eposm = 0, .eposs = uj};
@@ -891,31 +915,34 @@ init_inverse(void)
 			eoinv[UR] = eoaux[where_is_edge(c, UR)];
 			eoinv[DL] = eoaux[where_is_edge(c, DL)];
 			eoinv[DR] = eoaux[where_is_edge(c, DR)];
-			eo_invtable_s[ui][uj] = digit_array_to_int(eoinv,11,2);
+			eo_invtable_s[ui][uj] = digit_array_to_int(eoinv, 11, 2);
 		}
 	}
 
-	for (ui = 0; ui < FACTORIAL8; ui++) {
+	for (ui = 0; ui < FACTORIAL8; ui++)
+	{
 		cube_to_arrays((Cube){.cp = ui}, aux, pf_cp);
 		for (i = 0; i < 8; i++)
 			inv->cp[aux->cp[i]] = i;
 		cp_invtable[ui] = (uint16_t)arrays_to_cube(inv, pf_cp).cp;
 
-		for (uj = 0; uj < POW3TO7; uj++) {
+		for (uj = 0; uj < POW3TO7; uj++)
+		{
 			cube_to_arrays((Cube){.coud = uj}, aux, pf_coud);
 			for (i = 0; i < 8; i++)
-				inv->coud[aux->cp[i]] = (3-aux->coud[i])%3;
+				inv->coud[aux->cp[i]] = (3 - aux->coud[i]) % 3;
 			co_invtable[uj][ui] =
-			    (uint16_t)arrays_to_cube(inv, pf_coud).coud;
+					(uint16_t)arrays_to_cube(inv, pf_coud).coud;
 		}
 	}
-	
-	for (ui = 0; ui < FACTORIAL6; ui++) {
+
+	for (ui = 0; ui < FACTORIAL6; ui++)
+	{
 		cube_to_arrays((Cube){.cpos = ui}, aux, pf_cpos);
 		for (i = 0; i < 6; i++)
 			inv->cpos[aux->cpos[i]] = i;
 		cpos_invtable[ui] =
-		    (uint16_t)arrays_to_cube(inv, pf_cpos).cpos;
+				(uint16_t)arrays_to_cube(inv, pf_cpos).cpos;
 	}
 
 	free_cubearray(aux, pf_all);
@@ -925,8 +952,7 @@ init_inverse(void)
 		fprintf(stderr, "Error writing invtables\n");
 }
 
-void
-init_cube(void)
+void init_cube(void)
 {
 	init_inverse();
 }

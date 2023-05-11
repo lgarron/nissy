@@ -2,56 +2,56 @@
 
 /* Local functions ***********************************************************/
 
-static bool        allowed_HTM(Move m);
-static bool        allowed_URF(Move m);
-static bool        allowed_eofb(Move m);
-static bool        allowed_drud(Move m);
-static bool        allowed_htr(Move m);
-static bool        allowed_next_HTM(Move l2, Move l1, Move m);
-static int         axis(Move m);
+static bool allowed_HTM(Move m);
+static bool allowed_URF(Move m);
+static bool allowed_eofb(Move m);
+static bool allowed_drud(Move m);
+static bool allowed_htr(Move m);
+static bool allowed_next_HTM(Move l2, Move l1, Move m);
+static int axis(Move m);
 
-static void        free_alglistnode(AlgListNode *aln);
-static void        realloc_alg(Alg *alg, int n);
+static void free_alglistnode(AlgListNode *aln);
+static void realloc_alg(Alg *alg, int n);
 
 /* Movesets ******************************************************************/
 
 Moveset
-moveset_HTM = {
-	.allowed      = allowed_HTM,
-	.allowed_next = allowed_next_HTM,
+		moveset_HTM = {
+				.allowed = allowed_HTM,
+				.allowed_next = allowed_next_HTM,
 };
 
 Moveset
-moveset_URF = {
-	.allowed      = allowed_URF,
-	.allowed_next = allowed_next_HTM,
+		moveset_URF = {
+				.allowed = allowed_URF,
+				.allowed_next = allowed_next_HTM,
 };
 
 Moveset
-moveset_eofb = {
-	.allowed      = allowed_eofb,
-	.allowed_next = allowed_next_HTM,
+		moveset_eofb = {
+				.allowed = allowed_eofb,
+				.allowed_next = allowed_next_HTM,
 };
 
 Moveset
-moveset_drud = {
-	.allowed      = allowed_drud,
-	.allowed_next = allowed_next_HTM,
+		moveset_drud = {
+				.allowed = allowed_drud,
+				.allowed_next = allowed_next_HTM,
 };
 
 Moveset
-moveset_htr = {
-	.allowed      = allowed_htr,
-	.allowed_next = allowed_next_HTM,
+		moveset_htr = {
+				.allowed = allowed_htr,
+				.allowed_next = allowed_next_HTM,
 };
 
 static int nmoveset = 5;
-static Moveset * all_ms[] = {
-	&moveset_HTM,
-	&moveset_URF,
-	&moveset_eofb,
-	&moveset_drud,
-	&moveset_htr,
+static Moveset *all_ms[] = {
+		&moveset_HTM,
+		&moveset_URF,
+		&moveset_eofb,
+		&moveset_drud,
+		&moveset_htr,
 };
 
 /* Functions *****************************************************************/
@@ -76,7 +76,7 @@ allowed_eofb(Move m)
 	Move b = base_move(m);
 
 	return b == U || b == D || b == R || b == L ||
-	       ((b == F || b == B) && m == b+1);
+				 ((b == F || b == B) && m == b + 1);
 }
 
 static bool
@@ -85,7 +85,7 @@ allowed_drud(Move m)
 	Move b = base_move(m);
 
 	return b == U || b == D ||
-	       ((b == R || b == L || b == F || b == B) && m == b + 1);
+				 ((b == R || b == L || b == F || b == B) && m == b + 1);
 }
 
 static bool
@@ -107,8 +107,7 @@ allowed_next_HTM(Move l2, Move l1, Move m)
 	return !(p || (commute(l1, l2) && q));
 }
 
-void
-append_alg(AlgList *l, Alg *alg)
+void append_alg(AlgList *l, Alg *alg)
 {
 	AlgListNode *node = malloc(sizeof(AlgListNode));
 	int i;
@@ -125,14 +124,13 @@ append_alg(AlgList *l, Alg *alg)
 	l->last = node;
 }
 
-void
-append_move(Alg *alg, Move m, bool inverse)
+void append_move(Alg *alg, Move m, bool inverse)
 {
 	if (alg->len == alg->allocated)
-		realloc_alg(alg, 2*alg->len);
+		realloc_alg(alg, 2 * alg->len);
 
 	alg->move[alg->len] = m;
-	alg->inv [alg->len] = inverse;
+	alg->inv[alg->len] = inverse;
 	alg->len++;
 }
 
@@ -143,10 +141,10 @@ axis(Move m)
 		return 0;
 
 	if (m >= U && m <= B3)
-		return (m-1)/6 + 1;
-	
+		return (m - 1) / 6 + 1;
+
 	if (m >= Uw && m <= Bw3)
-		return (m-1)/6 - 2;
+		return (m - 1) / 6 - 2;
 
 	if (base_move(m) == E || base_move(m) == y)
 		return 1;
@@ -160,23 +158,20 @@ axis(Move m)
 	return -1;
 }
 
-Move
-base_move(Move m)
+Move base_move(Move m)
 {
 	if (m == NULLMOVE)
 		return NULLMOVE;
 	else
-		return m - (m-1)%3;
+		return m - (m - 1) % 3;
 }
 
-bool
-commute(Move m1, Move m2)
+bool commute(Move m1, Move m2)
 {
 	return axis(m1) == axis(m2);
 }
 
-void
-compose_alg(Alg *alg1, Alg *alg2)
+void compose_alg(Alg *alg1, Alg *alg2)
 {
 	int i;
 
@@ -184,27 +179,25 @@ compose_alg(Alg *alg1, Alg *alg2)
 		append_move(alg1, alg2->move[i], alg2->inv[i]);
 }
 
-void
-copy_alg(Alg *src, Alg *dst)
+void copy_alg(Alg *src, Alg *dst)
 {
 	dst->len = 0; /* Overwrites */
 	compose_alg(dst, src);
 }
 
-void
-free_alg(Alg *alg)
+void free_alg(Alg *alg)
 {
 	free(alg->move);
 	free(alg->inv);
 	free(alg);
 }
 
-void
-free_alglist(AlgList *l)
+void free_alglist(AlgList *l)
 {
 	AlgListNode *aux, *i = l->first;
 
-	while (i != NULL) {
+	while (i != NULL)
+	{
 		aux = i->next;
 		free_alglistnode(i);
 		i = aux;
@@ -219,8 +212,7 @@ free_alglistnode(AlgListNode *aln)
 	free(aln);
 }
 
-void
-inplace(Alg * (*f)(Alg *), Alg *alg)
+void inplace(Alg *(*f)(Alg *), Alg *alg)
 {
 	Alg *aux;
 
@@ -229,54 +221,87 @@ inplace(Alg * (*f)(Alg *), Alg *alg)
 	free(aux);
 }
 
-Alg *
-inverse_alg(Alg *alg)
+Alg *inverse_alg(Alg *alg)
 {
 	Alg *ret = new_alg("");
 	int i;
 
-	for (i = alg->len-1; i >= 0; i--)
+	for (i = alg->len - 1; i >= 0; i--)
 		append_move(ret, inverse_move(alg->move[i]), alg->inv[i]);
 
 	return ret;
 }
 
-Move
-inverse_move(Move m)
+Move inverse_move(Move m)
 {
-	return m == NULLMOVE ? NULLMOVE : m + 2 - 2*((m-1) % 3);
+	return m == NULLMOVE ? NULLMOVE : m + 2 - 2 * ((m - 1) % 3);
 }
 
 char *
 move_string(Move m)
 {
 	static char move_string_aux[NMOVES][7] = {
-		[NULLMOVE] = "-",
-		[U]  = "U",  [U2]  = "U2",  [U3]  = "U\'",
-		[D]  = "D",  [D2]  = "D2",  [D3]  = "D\'",
-		[R]  = "R",  [R2]  = "R2",  [R3]  = "R\'",
-		[L]  = "L",  [L2]  = "L2",  [L3]  = "L\'",
-		[F]  = "F",  [F2]  = "F2",  [F3]  = "F\'",
-		[B]  = "B",  [B2]  = "B2",  [B3]  = "B\'",
-		[Uw] = "Uw", [Uw2] = "Uw2", [Uw3] = "Uw\'",
-		[Dw] = "Dw", [Dw2] = "Dw2", [Dw3] = "Dw\'",
-		[Rw] = "Rw", [Rw2] = "Rw2", [Rw3] = "Rw\'",
-		[Lw] = "Lw", [Lw2] = "Lw2", [Lw3] = "Lw\'",
-		[Fw] = "Fw", [Fw2] = "Fw2", [Fw3] = "Fw\'",
-		[Bw] = "Bw", [Bw2] = "Bw2", [Bw3] = "Bw\'",
-		[M]  = "M",  [M2]  = "M2",  [M3]  = "M\'",
-		[E]  = "E",  [E2]  = "E2",  [E3]  = "E\'",
-		[S]  = "S",  [S2]  = "S2",  [S3]  = "S\'",
-		[x]  = "x",  [x2]  = "x2",  [x3]  = "x\'",
-		[y]  = "y",  [y2]  = "y2",  [y3]  = "y\'",
-		[z]  = "z",  [z2]  = "z2",  [z3]  = "z\'",
+			[NULLMOVE] = "-",
+			[U] = "U",
+			[U2] = "U2",
+			[U3] = "U\'",
+			[D] = "D",
+			[D2] = "D2",
+			[D3] = "D\'",
+			[R] = "R",
+			[R2] = "R2",
+			[R3] = "R\'",
+			[L] = "L",
+			[L2] = "L2",
+			[L3] = "L\'",
+			[F] = "F",
+			[F2] = "F2",
+			[F3] = "F\'",
+			[B] = "B",
+			[B2] = "B2",
+			[B3] = "B\'",
+			[Uw] = "Uw",
+			[Uw2] = "Uw2",
+			[Uw3] = "Uw\'",
+			[Dw] = "Dw",
+			[Dw2] = "Dw2",
+			[Dw3] = "Dw\'",
+			[Rw] = "Rw",
+			[Rw2] = "Rw2",
+			[Rw3] = "Rw\'",
+			[Lw] = "Lw",
+			[Lw2] = "Lw2",
+			[Lw3] = "Lw\'",
+			[Fw] = "Fw",
+			[Fw2] = "Fw2",
+			[Fw3] = "Fw\'",
+			[Bw] = "Bw",
+			[Bw2] = "Bw2",
+			[Bw3] = "Bw\'",
+			[M] = "M",
+			[M2] = "M2",
+			[M3] = "M\'",
+			[E] = "E",
+			[E2] = "E2",
+			[E3] = "E\'",
+			[S] = "S",
+			[S2] = "S2",
+			[S3] = "S\'",
+			[x] = "x",
+			[x2] = "x2",
+			[x3] = "x\'",
+			[y] = "y",
+			[y2] = "y2",
+			[y3] = "y\'",
+			[z] = "z",
+			[z2] = "z2",
+			[z3] = "z\'",
 	};
 
 	return move_string_aux[m];
 }
 
-Alg *
-new_alg(char *str)
+Alg *new_alg(char *str)
 {
 	Alg *alg;
 	int i;
@@ -284,35 +309,40 @@ new_alg(char *str)
 	Move j, m;
 
 	alg = malloc(sizeof(Alg));
-	alg->move      = malloc(30 * sizeof(Move));
-	alg->inv       = malloc(30 * sizeof(bool));
+	alg->move = malloc(30 * sizeof(Move));
+	alg->inv = malloc(30 * sizeof(bool));
 	alg->allocated = 30;
-	alg->len       = 0;
+	alg->len = 0;
 
 	niss = false;
-	for (i = 0; str[i]; i++) {
+	for (i = 0; str[i]; i++)
+	{
 		if (str[i] == ' ' || str[i] == '\t' || str[i] == '\n')
 			continue;
 
-		if (str[i] == '(' && niss) {
+		if (str[i] == '(' && niss)
+		{
 			fprintf(stderr, "Error reading moves: nested ( )\n");
 			alg->len = 0;
 			return alg;
 		}
 
-		if (str[i] == ')' && !niss) {
+		if (str[i] == ')' && !niss)
+		{
 			fprintf(stderr, "Error reading moves: unmatched )\n");
 			alg->len = 0;
 			return alg;
 		}
 
-		if (str[i] == '(' || str[i] == ')') {
+		if (str[i] == '(' || str[i] == ')')
+		{
 			niss = !niss;
 			continue;
 		}
 
 		/* Single slash for comments */
-		if (str[i] == '/') {
+		if (str[i] == '/')
+		{
 			while (str[i] && str[i] != '\n')
 				i++;
 
@@ -323,34 +353,45 @@ new_alg(char *str)
 		}
 
 		move_read = false;
-		for (j = U; j < NMOVES; j++) {
+		for (j = U; j < NMOVES; j++)
+		{
 			if (str[i] == move_string(j)[0] ||
-			    (str[i] >= 'a' && str[i] <= 'z' &&
-			     str[i] == move_string(j)[0]-('A'-'a') && j<=B)) {
+					(str[i] >= 'a' && str[i] <= 'z' &&
+					 str[i] == move_string(j)[0] - ('A' - 'a') && j <= B))
+			{
 				m = j;
-				if (str[i] >= 'a' && str[i] <= 'z' && j<=B) {
+				if (str[i] >= 'a' && str[i] <= 'z' && j <= B)
+				{
 					m += Uw - U;
 				}
-				if (m <= B && str[i+1]=='w') {
+				if (m <= B && str[i + 1] == 'w')
+				{
 					m += Uw - U;
 					i++;
 				}
-				if (str[i+1]=='2') {
+				if (str[i + 1] == '2')
+				{
 					m += 1;
 					i++;
-				} else if (str[i+1] == '\'' ||
-				           str[i+1] == '3'  ||
-					   str[i+1] == '`' ) {
+				}
+				else if (str[i + 1] == '\'' ||
+								 str[i + 1] == '3' ||
+								 str[i + 1] == '`')
+				{
 					m += 2;
 					i++;
-				} else if ((int)str[i+1] == -62 &&
-					   (int)str[i+2] == -76) {
+				}
+				else if ((int)str[i + 1] == -62 &&
+								 (int)str[i + 2] == -76)
+				{
 					/* Weird apostrophe */
 					m += 2;
 					i += 2;
-				} else if ((int)str[i+1] == -30 &&
-					   (int)str[i+2] == -128 &&
-					   (int)str[i+3] == -103) {
+				}
+				else if ((int)str[i + 1] == -30 &&
+								 (int)str[i + 2] == -128 &&
+								 (int)str[i + 3] == -103)
+				{
 					/* MacOS apostrophe */
 					m += 2;
 					i += 3;
@@ -361,13 +402,15 @@ new_alg(char *str)
 			}
 		}
 
-		if (!move_read) {
+		if (!move_read)
+		{
 			free(alg);
 			return new_alg("");
 		}
 	}
 
-	if (niss) {
+	if (niss)
+	{
 		fprintf(stderr, "Error reading moves: unmatched (\n");
 		alg->len = 0;
 	}
@@ -380,15 +423,14 @@ new_alglist(void)
 {
 	AlgList *ret = malloc(sizeof(AlgList));
 
-	ret->len   = 0;
+	ret->len = 0;
 	ret->first = NULL;
-	ret->last  = NULL;
+	ret->last = NULL;
 
 	return ret;
 }
 
-Alg *
-on_inverse(Alg *alg)
+Alg *on_inverse(Alg *alg)
 {
 	Alg *ret = new_alg("");
 	int i;
@@ -399,14 +441,14 @@ on_inverse(Alg *alg)
 	return ret;
 }
 
-void
-print_alg(Alg *alg, bool l)
+void print_alg(Alg *alg, bool l)
 {
 	char fill[4];
 	int i;
 	bool niss = false;
 
-	for (i = 0; i < alg->len; i++) {
+	for (i = 0; i < alg->len; i++)
+	{
 		if (!niss && alg->inv[i])
 			strcpy(fill, i == 0 ? "(" : " (");
 		if (niss && !alg->inv[i])
@@ -426,8 +468,7 @@ print_alg(Alg *alg, bool l)
 	printf("\n");
 }
 
-void
-print_alglist(AlgList *al, bool l)
+void print_alglist(AlgList *al, bool l)
 {
 	AlgListNode *i;
 
@@ -438,29 +479,31 @@ print_alglist(AlgList *al, bool l)
 static void
 realloc_alg(Alg *alg, int n)
 {
-	if (alg == NULL) {
+	if (alg == NULL)
+	{
 		fprintf(stderr, "Error: trying to reallocate NULL alg.\n");
 		return;
 	}
 
-	if (n < alg->len) {
+	if (n < alg->len)
+	{
 		fprintf(stderr, "Error: alg too long for reallocation ");
 		fprintf(stderr, "(%d vs %d)\n", alg->len, n);
 		return;
 	}
 
-	if (n > 1000000) {
+	if (n > 1000000)
+	{
 		fprintf(stderr, "Warning: very long alg,");
 		fprintf(stderr, "something might go wrong.\n");
 	}
 
 	alg->move = realloc(alg->move, n * sizeof(int));
-	alg->inv  = realloc(alg->inv,  n * sizeof(int));
+	alg->inv = realloc(alg->inv, n * sizeof(int));
 	alg->allocated = n;
 }
 
-void
-swapmove(Move *m1, Move *m2)
+void swapmove(Move *m1, Move *m2)
 {
 	Move aux;
 
@@ -469,8 +512,7 @@ swapmove(Move *m1, Move *m2)
 	*m2 = aux;
 }
 
-Alg *
-unniss(Alg *alg)
+Alg *unniss(Alg *alg)
 {
 	int i;
 	Alg *ret;
@@ -480,16 +522,15 @@ unniss(Alg *alg)
 	for (i = 0; i < alg->len; i++)
 		if (!alg->inv[i])
 			append_move(ret, alg->move[i], false);
-	
-	for (i = alg->len-1; i >= 0; i--)
+
+	for (i = alg->len - 1; i >= 0; i--)
 		if (alg->inv[i])
 			append_move(ret, inverse_move(alg->move[i]), false);
-	
+
 	return ret;
 }
 
-void
-init_moveset(Moveset *ms)
+void init_moveset(Moveset *ms)
 {
 	int j;
 	uint64_t l, one;
@@ -502,20 +543,22 @@ init_moveset(Moveset *ms)
 			ms->sorted_moves[j++] = m;
 	ms->sorted_moves[j] = NULLMOVE;
 
-	for (l1 = 0; l1 < NMOVES; l1++) { 
-		for (l2 = 0; l2 < NMOVES; l2++) { 
+	for (l1 = 0; l1 < NMOVES; l1++)
+	{
+		for (l2 = 0; l2 < NMOVES; l2++)
+		{
 			ms->mask[l2][l1] = 0;
-			for (l=0; ms->sorted_moves[l]!=NULLMOVE; l++) {
+			for (l = 0; ms->sorted_moves[l] != NULLMOVE; l++)
+			{
 				m = ms->sorted_moves[l];
 				if (ms->allowed_next(l2, l1, m))
-					ms->mask[l2][l1] |= (one<<m);
+					ms->mask[l2][l1] |= (one << m);
 			}
 		}
 	}
 }
 
-void
-init_all_movesets(void)
+void init_all_movesets(void)
 {
 	int i;
 

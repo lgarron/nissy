@@ -2,185 +2,180 @@
 
 /* Arg parsing functions *****************************************************/
 
-CommandArgs *           gen_parse_args(int c, char **v);
-CommandArgs *           help_parse_args(int c, char **v);
-CommandArgs *           parse_only_scramble(int c, char **v);
-CommandArgs *           parse_no_arg(int c, char **v);
-CommandArgs *           solve_parse_args(int c, char **v);
-CommandArgs *           scramble_parse_args(int c, char **v);
+CommandArgs *gen_parse_args(int c, char **v);
+CommandArgs *help_parse_args(int c, char **v);
+CommandArgs *parse_only_scramble(int c, char **v);
+CommandArgs *parse_no_arg(int c, char **v);
+CommandArgs *solve_parse_args(int c, char **v);
+CommandArgs *scramble_parse_args(int c, char **v);
 
 /* Exec functions ************************************************************/
 
-static void             gen_exec(CommandArgs *args);
-static void             cleanup_exec(CommandArgs *args);
-static void             invert_exec(CommandArgs *args);
-static void             solve_exec(CommandArgs *args);
-static void             scramble_exec(CommandArgs *args);
-static void             steps_exec(CommandArgs *args);
-static void             commands_exec(CommandArgs *args);
-static void             freemem_exec(CommandArgs *args);
-static void             print_exec(CommandArgs *args);
-static void             twophase_exec(CommandArgs *args);
-static void             help_exec(CommandArgs *args);
-static void             quit_exec(CommandArgs *args);
-static void             unniss_exec(CommandArgs *args);
-static void             version_exec(CommandArgs *args);
+static void gen_exec(CommandArgs *args);
+static void cleanup_exec(CommandArgs *args);
+static void invert_exec(CommandArgs *args);
+static void solve_exec(CommandArgs *args);
+static void scramble_exec(CommandArgs *args);
+static void steps_exec(CommandArgs *args);
+static void commands_exec(CommandArgs *args);
+static void freemem_exec(CommandArgs *args);
+static void print_exec(CommandArgs *args);
+static void twophase_exec(CommandArgs *args);
+static void help_exec(CommandArgs *args);
+static void quit_exec(CommandArgs *args);
+static void unniss_exec(CommandArgs *args);
+static void version_exec(CommandArgs *args);
 
 /* Local functions ***********************************************************/
 
-static bool             read_step(CommandArgs *args, char *str);
-static bool             read_scrtype(CommandArgs *args, char *str);
-static bool             read_scramble(int c, char **v, CommandArgs *args);
+static bool read_step(CommandArgs *args, char *str);
+static bool read_scrtype(CommandArgs *args, char *str);
+static bool read_scramble(int c, char **v, CommandArgs *args);
 
 /* Commands ******************************************************************/
 
 Command
-solve_cmd = {
-	.name        = "solve",
-	.usage       = "solve STEP [OPTIONS] SCRAMBLE",
-	.description = "Solve a step; see command steps for a list of steps",
-	.parse_args  = solve_parse_args,
-	.exec        = solve_exec
+		solve_cmd = {
+				.name = "solve",
+				.usage = "solve STEP [OPTIONS] SCRAMBLE",
+				.description = "Solve a step; see command steps for a list of steps",
+				.parse_args = solve_parse_args,
+				.exec = solve_exec};
+
+Command
+		scramble_cmd = {
+				.name = "scramble",
+				.usage = "scramble [TYPE] [-n N]",
+				.description = "Get a random-position scramble",
+				.parse_args = scramble_parse_args,
+				.exec = scramble_exec,
 };
 
 Command
-scramble_cmd = {
-	.name        = "scramble",
-	.usage       = "scramble [TYPE] [-n N]",
-	.description = "Get a random-position scramble",
-	.parse_args  = scramble_parse_args,
-	.exec        = scramble_exec,
+		gen_cmd = {
+				.name = "gen",
+				.usage = "gen [-t N]",
+				.description = "Generate all tables [using N threads]",
+				.parse_args = gen_parse_args,
+				.exec = gen_exec};
+
+Command
+		invert_cmd = {
+				.name = "invert",
+				.usage = "invert SCRAMBLE]",
+				.description = "Invert a scramble",
+				.parse_args = parse_only_scramble,
+				.exec = invert_exec,
 };
 
 Command
-gen_cmd = {
-	.name        = "gen",
-	.usage       = "gen [-t N]",
-	.description = "Generate all tables [using N threads]",
-	.parse_args  = gen_parse_args,
-	.exec        = gen_exec
+		steps_cmd = {
+				.name = "steps",
+				.usage = "steps",
+				.description = "List available steps",
+				.parse_args = parse_no_arg,
+				.exec = steps_exec};
+
+Command
+		commands_cmd = {
+				.name = "commands",
+				.usage = "commands",
+				.description = "List available commands",
+				.parse_args = parse_no_arg,
+				.exec = commands_exec};
+
+Command
+		freemem_cmd = {
+				.name = "freemem",
+				.usage = "freemem",
+				.description = "free large tables from RAM",
+				.parse_args = parse_no_arg,
+				.exec = freemem_exec,
 };
 
 Command
-invert_cmd = {
-	.name        = "invert",
-	.usage       = "invert SCRAMBLE]",
-	.description = "Invert a scramble",
-	.parse_args  = parse_only_scramble,
-	.exec        = invert_exec,
+		print_cmd = {
+				.name = "print",
+				.usage = "print SCRAMBLE",
+				.description = "Print written description of the cube",
+				.parse_args = parse_only_scramble,
+				.exec = print_exec,
 };
 
 Command
-steps_cmd = {
-	.name        = "steps",
-	.usage       = "steps",
-	.description = "List available steps",
-	.parse_args  = parse_no_arg,
-	.exec        = steps_exec
+		help_cmd = {
+				.name = "help",
+				.usage = "help [COMMAND]",
+				.description = "Display nissy manual page or help on specific command",
+				.parse_args = help_parse_args,
+				.exec = help_exec,
 };
 
 Command
-commands_cmd = {
-	.name        = "commands",
-	.usage       = "commands",
-	.description = "List available commands",
-	.parse_args  = parse_no_arg,
-	.exec        = commands_exec
+		twophase_cmd = {
+				.name = "twophase",
+				.usage = "twophase",
+				.description = "Find a solution quickly using a 2-phase method",
+				.parse_args = parse_only_scramble,
+				.exec = twophase_exec,
 };
 
 Command
-freemem_cmd = {
-	.name        = "freemem",
-	.usage       = "freemem",
-	.description = "free large tables from RAM",
-	.parse_args  = parse_no_arg,
-	.exec        = freemem_exec,
+		quit_cmd = {
+				.name = "quit",
+				.usage = "quit",
+				.description = "Quit nissy",
+				.parse_args = parse_no_arg,
+				.exec = quit_exec,
 };
 
 Command
-print_cmd = {
-	.name        = "print",
-	.usage       = "print SCRAMBLE",
-	.description = "Print written description of the cube",
-	.parse_args  = parse_only_scramble,
-	.exec        = print_exec,
+		cleanup_cmd = {
+				.name = "cleanup",
+				.usage = "cleanup SCRAMBLE",
+				.description = "Rewrite a scramble using only standard moves (HTM)",
+				.parse_args = parse_only_scramble,
+				.exec = cleanup_exec,
 };
 
 Command
-help_cmd = {
-	.name        = "help",
-	.usage       = "help [COMMAND]",
-	.description = "Display nissy manual page or help on specific command",
-	.parse_args  = help_parse_args,
-	.exec        = help_exec,
+		unniss_cmd = {
+				.name = "unniss",
+				.usage = "unniss SCRAMBLE",
+				.description = "Rewrite a scramble without NISS",
+				.parse_args = parse_only_scramble,
+				.exec = unniss_exec,
 };
 
 Command
-twophase_cmd = {
-	.name        = "twophase",
-	.usage       = "twophase",
-	.description = "Find a solution quickly using a 2-phase method",
-	.parse_args  = parse_only_scramble,
-	.exec        = twophase_exec,
-};
-
-Command
-quit_cmd = {
-	.name        = "quit",
-	.usage       = "quit",
-	.description = "Quit nissy",
-	.parse_args  = parse_no_arg,
-	.exec        = quit_exec,
-};
-
-Command
-cleanup_cmd = {
-	.name        = "cleanup",
-	.usage       = "cleanup SCRAMBLE",
-	.description = "Rewrite a scramble using only standard moves (HTM)",
-	.parse_args  = parse_only_scramble,
-	.exec        = cleanup_exec,
-};
-
-Command
-unniss_cmd = {
-	.name        = "unniss",
-	.usage       = "unniss SCRAMBLE",
-	.description = "Rewrite a scramble without NISS",
-	.parse_args  = parse_only_scramble,
-	.exec        = unniss_exec,
-};
-
-Command
-version_cmd = {
-	.name        = "version",
-	.usage       = "version",
-	.description = "print nissy version",
-	.parse_args  = parse_no_arg,
-	.exec        = version_exec,
+		version_cmd = {
+				.name = "version",
+				.usage = "version",
+				.description = "print nissy version",
+				.parse_args = parse_no_arg,
+				.exec = version_exec,
 };
 
 Command *commands[] = {
-	&commands_cmd,
-	&freemem_cmd,
-	&gen_cmd,
-	&help_cmd,
-	&invert_cmd,
-	&print_cmd,
-	&quit_cmd,
-	&solve_cmd,
-	&scramble_cmd,
-	&steps_cmd,
-	&twophase_cmd,
-	&cleanup_cmd,
-	&unniss_cmd,
-	&version_cmd,
-	NULL
-};
+		&commands_cmd,
+		&freemem_cmd,
+		&gen_cmd,
+		&help_cmd,
+		&invert_cmd,
+		&print_cmd,
+		&quit_cmd,
+		&solve_cmd,
+		&scramble_cmd,
+		&steps_cmd,
+		&twophase_cmd,
+		&cleanup_cmd,
+		&unniss_cmd,
+		&version_cmd,
+		NULL};
 
 /* Other constants ***********************************************************/
 
-char *scrtypes[20] = { "eo", "corners", "edges", "fmc", "dr", "htr", NULL };
+char *scrtypes[20] = {"eo", "corners", "edges", "fmc", "dr", "htr", NULL};
 
 /* Arg parsing functions implementation **************************************/
 
@@ -193,85 +188,116 @@ solve_parse_args(int c, char **v)
 
 	CommandArgs *a = new_args();
 
-	a->opts->min_moves     = 0;
-	a->opts->max_moves     = 20;
+	a->opts->min_moves = 0;
+	a->opts->max_moves = 20;
 	a->opts->max_solutions = 1;
-	a->opts->nthreads      = 1;
-	a->opts->optimal       = -1;
-	a->opts->can_niss      = false;
-	a->opts->verbose       = false;
-	a->opts->all           = false;
-	a->opts->print_number  = true;
-	a->opts->count_only    = false;
+	a->opts->nthreads = 1;
+	a->opts->optimal = -1;
+	a->opts->can_niss = false;
+	a->opts->verbose = false;
+	a->opts->all = false;
+	a->opts->print_number = true;
+	a->opts->count_only = false;
 
 	fixedmsols = false;
 	infinitesols = false;
 
-	for (i = 0; i < c; i++) {
-		if (!strcmp(v[i], "-m") && i+1 < c) {
+	for (i = 0; i < c; i++)
+	{
+		if (!strcmp(v[i], "-m") && i + 1 < c)
+		{
 			val = strtol(v[++i], NULL, 10);
-			if (val < 0 || val > 100) {
+			if (val < 0 || val > 100)
+			{
 				fprintf(stderr,
-					"Invalid min number of moves"
-					"(0 <= N <= 100).\n");
+								"Invalid min number of moves"
+								"(0 <= N <= 100).\n");
 				return a;
 			}
 			a->opts->min_moves = val;
-		} else if (!strcmp(v[i], "-M") && i+1 < c) {
+		}
+		else if (!strcmp(v[i], "-M") && i + 1 < c)
+		{
 			val = strtol(v[++i], NULL, 10);
-			if (val < 0 || val > 100) {
+			if (val < 0 || val > 100)
+			{
 				fprintf(stderr,
-					"Invalid max number of moves"
-					"(0 <= N <= 100).\n");
+								"Invalid max number of moves"
+								"(0 <= N <= 100).\n");
 				return a;
 			}
 			a->opts->max_moves = val;
 			infinitesols = true;
-		} else if (!strcmp(v[i], "-t") && i+1 < c) {
+		}
+		else if (!strcmp(v[i], "-t") && i + 1 < c)
+		{
 			val = strtol(v[++i], NULL, 10);
-			if (val < 1 || val > 64) {
+			if (val < 1 || val > 64)
+			{
 				fprintf(stderr,
-					"Invalid number of threads."
-					"1 <= t <= 64\n");
+								"Invalid number of threads."
+								"1 <= t <= 64\n");
 				return a;
 			}
 			a->opts->nthreads = val;
-		} else if (!strcmp(v[i], "-n") && i+1 < c) {
+		}
+		else if (!strcmp(v[i], "-n") && i + 1 < c)
+		{
 			val = strtol(v[++i], NULL, 10);
-			if (val < 1 || val > 1000000) {
+			if (val < 1 || val > 1000000)
+			{
 				fprintf(stderr,
-					"Invalid number of solutions.\n");
+								"Invalid number of solutions.\n");
 				return a;
 			}
 			a->opts->max_solutions = val;
 			fixedmsols = true;
-		} else if (!strcmp(v[i], "-o")) {
+		}
+		else if (!strcmp(v[i], "-o"))
+		{
 			a->opts->optimal = 0;
 			infinitesols = true;
-		} else if (!strcmp(v[i], "-O") && i+1 < c) {
+		}
+		else if (!strcmp(v[i], "-O") && i + 1 < c)
+		{
 			val = strtol(v[++i], NULL, 10);
 			if (val < 0 || val > 100 ||
-			    (val == 0 && strcmp("0", v[i]))) {
+					(val == 0 && strcmp("0", v[i])))
+			{
 				fprintf(stderr,
-					"Invalid max number of moves"
-					" (0 <= N <= 100).\n");
+								"Invalid max number of moves"
+								" (0 <= N <= 100).\n");
 				return a;
 			}
 			a->opts->optimal = val;
 			infinitesols = true;
-		} else if (!strcmp(v[i], "-N")) {
+		}
+		else if (!strcmp(v[i], "-N"))
+		{
 			a->opts->can_niss = true;
-		} else if (!strcmp(v[i], "-i")) {
+		}
+		else if (!strcmp(v[i], "-i"))
+		{
 			a->scrstdin = true;
-		} else if (!strcmp(v[i], "-v")) {
+		}
+		else if (!strcmp(v[i], "-v"))
+		{
 			a->opts->verbose = true;
-		} else if (!strcmp(v[i], "-a")) {
+		}
+		else if (!strcmp(v[i], "-a"))
+		{
 			a->opts->all = true;
-		} else if (!strcmp(v[i], "-p")) {
+		}
+		else if (!strcmp(v[i], "-p"))
+		{
 			a->opts->print_number = false;
-		} else if (!strcmp(v[i], "-c")) {
+		}
+		else if (!strcmp(v[i], "-c"))
+		{
 			a->opts->count_only = true;
-		} else if (!read_step(a, v[i])) {
+		}
+		else if (!read_step(a, v[i]))
+		{
 			break;
 		}
 	}
@@ -279,7 +305,7 @@ solve_parse_args(int c, char **v)
 	if (infinitesols && !fixedmsols)
 		a->opts->max_solutions = 1000000; /* 1M = +infty */
 
-	a->success = (a->scrstdin && i == c) || read_scramble(c-i, &v[i], a);
+	a->success = (a->scrstdin && i == c) || read_scramble(c - i, &v[i], a);
 	return a;
 }
 
@@ -292,19 +318,24 @@ scramble_parse_args(int c, char **v)
 	CommandArgs *a = new_args();
 
 	a->success = true;
-	a->n       = 1;
+	a->n = 1;
 
-	for (i = 0; i < c; i++) {
-		if (!strcmp(v[i], "-n") && i+1 < c) {
+	for (i = 0; i < c; i++)
+	{
+		if (!strcmp(v[i], "-n") && i + 1 < c)
+		{
 			val = strtol(v[++i], NULL, 10);
-			if (val < 1 || val > 1000000) {
+			if (val < 1 || val > 1000000)
+			{
 				fprintf(stderr,
-					"Invalid number of scrambles.\n");
+								"Invalid number of scrambles.\n");
 				a->success = false;
 				return a;
 			}
 			a->n = val;
-		} else if (!read_scrtype(a, v[i])) {
+		}
+		else if (!read_scrtype(a, v[i]))
+		{
 			a->success = false;
 			return a;
 		}
@@ -320,24 +351,29 @@ gen_parse_args(int c, char **v)
 	CommandArgs *a = new_args();
 
 	a->opts->nthreads = 64;
-	a->success  = false;
+	a->success = false;
 
-	if (c == 0) {
+	if (c == 0)
+	{
 		a->success = true;
-	} else {
-		if (!strcmp(v[0], "-t") && c > 1) {
+	}
+	else
+	{
+		if (!strcmp(v[0], "-t") && c > 1)
+		{
 			val = strtol(v[1], NULL, 10);
-			if (val < 1 || val > 64) {
+			if (val < 1 || val > 64)
+			{
 				fprintf(stderr,
-					"Invalid number of threads."
-					"1 <= t <= 64\n");
+								"Invalid number of threads."
+								"1 <= t <= 64\n");
 				return a;
 			}
 			a->opts->nthreads = val;
 			a->success = true;
 		}
 	}
-	
+
 	return a;
 }
 
@@ -347,7 +383,8 @@ help_parse_args(int c, char **v)
 	int i;
 	CommandArgs *a = new_args();
 
-	if (c == 1) {
+	if (c == 1)
+	{
 		for (i = 0; commands[i] != NULL; i++)
 			if (!strcmp(v[0], commands[i]->name))
 				a->command = commands[i];
@@ -364,10 +401,13 @@ parse_only_scramble(int c, char **v)
 {
 	CommandArgs *a = new_args();
 
-	if (!strcmp(v[0], "-i")) {
+	if (!strcmp(v[0], "-i"))
+	{
 		a->scrstdin = true;
 		a->success = c == 1;
-	} else {
+	}
+	else
+	{
 		a->success = read_scramble(c, v, a);
 	}
 
@@ -413,7 +453,7 @@ scramble_exec(CommandArgs *args)
 	CubeArray *arr;
 	Alg *scr, *ruf, *aux;
 	int i, j, eo, ep, co, cp, a[12];
-	int eparr[12] = { [8] = 8, [9] = 9, [10] = 10, [11] = 11 };
+	int eparr[12] = {[8] = 8, [9] = 9, [10] = 10, [11] = 11};
 	uint64_t ui, uj, uk;
 
 	init_all_movesets();
@@ -421,16 +461,19 @@ scramble_exec(CommandArgs *args)
 
 	srand(time(NULL));
 
-	for (i = 0; i < args->n; i++) {
+	for (i = 0; i < args->n; i++)
+	{
 
-		if (!strcmp(args->scrtype, "dr")) {
+		if (!strcmp(args->scrtype, "dr"))
+		{
 			/* Warning: cube is inconsistent because of side CO  *
 			 * and EO on U/D. But solve_2phase only solves drfin *
 			 * in this case, so it should be ok.                 *
 			 * TODO: check this properly                         *
 			 * Moreover we again need to fix parity after        *
 			 * generating epose manually                         */
-			do {
+			do
+			{
 				ui = rand() % FACTORIAL8;
 				uj = rand() % FACTORIAL8;
 				uk = rand() % FACTORIAL4;
@@ -444,38 +487,50 @@ scramble_exec(CommandArgs *args)
 				cube.cp = uj;
 				cube.epose = uk;
 			} while (!is_admissible(cube));
-		} else if (!strcmp(args->scrtype, "htr")) {
+		}
+		else if (!strcmp(args->scrtype, "htr"))
+		{
 			/* antindex_htrfin() returns a consistent *
 			 * cube, except possibly for parity       */
-			do {
-				ui = rand() % (24*24/6);
+			do
+			{
+				ui = rand() % (24 * 24 / 6);
 				cube = (Cube){0};
 				cube.cp = cornershtrfin_ant[ui];
 				cube.epose = rand() % 24;
 				cube.eposs = rand() % 24;
 				cube.eposm = rand() % 24;
 			} while (!is_admissible(cube));
-		} else {
+		}
+		else
+		{
 			eo = rand() % POW2TO11;
 			ep = rand() % FACTORIAL12;
 			co = rand() % POW3TO7;
 			cp = rand() % FACTORIAL8;
 
-			if (!strcmp(args->scrtype, "eo")) {
+			if (!strcmp(args->scrtype, "eo"))
+			{
 				eo = 0;
-			} else if (!strcmp(args->scrtype, "corners")) {
+			}
+			else if (!strcmp(args->scrtype, "corners"))
+			{
 				eo = 0;
 				ep = 0;
 				index_to_perm(cp, 8, a);
-				if (perm_sign(a, 8) == 1) {
+				if (perm_sign(a, 8) == 1)
+				{
 					swap(&a[0], &a[1]);
 					cp = perm_to_index(a, 8);
 				}
-			} else if (!strcmp(args->scrtype, "edges")) {
+			}
+			else if (!strcmp(args->scrtype, "edges"))
+			{
 				co = 0;
 				cp = 0;
 				index_to_perm(ep, 12, a);
-				if (perm_sign(a, 12) == 1) {
+				if (perm_sign(a, 12) == 1)
+				{
 					swap(&a[0], &a[1]);
 					ep = perm_to_index(a, 12);
 				}
@@ -486,16 +541,18 @@ scramble_exec(CommandArgs *args)
 		/* TODO: can be optimized for htr and dr using htrfin, drfin */
 		scr = solve_2phase(cube, 1);
 
-		if (!strcmp(args->scrtype, "fmc")) {
+		if (!strcmp(args->scrtype, "fmc"))
+		{
 			aux = new_alg("");
 			copy_alg(scr, aux);
 			/* Trick to rufify for free: rotate the scramble  *
 			 * so that it does not start with F or end with R */
-			for (j = 0; j < NROTATIONS; j++) {
+			for (j = 0; j < NROTATIONS; j++)
+			{
 				if (base_move(scr->move[0]) != F &&
-				    base_move(scr->move[0]) != B &&
-				    base_move(scr->move[scr->len-1]) != R &&
-				    base_move(scr->move[scr->len-1]) != L)
+						base_move(scr->move[0]) != B &&
+						base_move(scr->move[scr->len - 1]) != R &&
+						base_move(scr->move[scr->len - 1]) != L)
 					break;
 				copy_alg(aux, scr);
 				transform_alg(j, scr);
@@ -556,7 +613,6 @@ commands_exec(CommandArgs *args)
 
 	for (i = 0; commands[i] != NULL; i++)
 		printf("%s\n", commands[i]->usage);
-
 }
 
 static void
@@ -600,22 +656,24 @@ twophase_exec(CommandArgs *args)
 static void
 help_exec(CommandArgs *args)
 {
-	if (args->command == NULL) {
+	if (args->command == NULL)
+	{
 		printf(
-		       "Use the nissy command \"help COMMAND\" for a short "
-		       "description of a specific command.\n"
-		       "Use the nissy command \"commands\" for a list of "
-		       "available commands.\n"
-		       "See the manual page for more details. The manual"
-		       " page is available with \"man nissy\" on a UNIX"
-		       " system (such as Linux or MacOS) or in pdf and html"
-		       " format in the docs folder.\n"
-		       "Nissy is available for free at "
-		       "https://github.com/sebastianotronto/nissy\n"
-		      );
-	} else {
+				"Use the nissy command \"help COMMAND\" for a short "
+				"description of a specific command.\n"
+				"Use the nissy command \"commands\" for a list of "
+				"available commands.\n"
+				"See the manual page for more details. The manual"
+				" page is available with \"man nissy\" on a UNIX"
+				" system (such as Linux or MacOS) or in pdf and html"
+				" format in the docs folder.\n"
+				"Nissy is available for free at "
+				"https://github.com/sebastianotronto/nissy\n");
+	}
+	else
+	{
 		printf("Command %s: %s\nusage: %s\n", args->command->name,
-		       args->command->description, args->command->usage);
+					 args->command->description, args->command->usage);
 	}
 }
 
@@ -651,7 +709,7 @@ unniss_exec(CommandArgs *args)
 static void
 version_exec(CommandArgs *args)
 {
-	printf(VERSION"\n");
+	printf(VERSION "\n");
 }
 
 /* Local functions implementation ********************************************/
@@ -663,12 +721,13 @@ read_scramble(int c, char **v, CommandArgs *args)
 	unsigned int j;
 	char *algstr;
 
-	if (c < 1) {
+	if (c < 1)
+	{
 		fprintf(stderr, "Error: no scramble given?\n");
 		return false;
 	}
 
-	for(n = 0, i = 0; i < c; i++)
+	for (n = 0, i = 0; i < c; i++)
 		n += strlen(v[i]);
 
 	algstr = malloc((n + 1) * sizeof(char));
@@ -692,8 +751,10 @@ read_scrtype(CommandArgs *args, char *str)
 {
 	int i;
 
-	for (i = 0; scrtypes[i] != NULL; i++) {
-		if (!strcmp(scrtypes[i], str)) {
+	for (i = 0; scrtypes[i] != NULL; i++)
+	{
+		if (!strcmp(scrtypes[i], str))
+		{
 			strcpy(args->scrtype, scrtypes[i]);
 			return true;
 		}
@@ -707,8 +768,10 @@ read_step(CommandArgs *args, char *str)
 {
 	int i;
 
-	for (i = 0; steps[i] != NULL; i++) {
-		if (!strcmp(steps[i]->shortname, str)) {
+	for (i = 0; steps[i] != NULL; i++)
+	{
+		if (!strcmp(steps[i]->shortname, str))
+		{
 			args->step = steps[i];
 			return true;
 		}
@@ -719,8 +782,7 @@ read_step(CommandArgs *args, char *str)
 
 /* Public functions implementation *******************************************/
 
-void
-free_args(CommandArgs *args)
+void free_args(CommandArgs *args)
 {
 	if (args == NULL)
 		return;
