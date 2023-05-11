@@ -479,7 +479,7 @@ scramble_exec(CommandArgs *args)
 				uk = rand() % FACTORIAL4;
 
 				index_to_perm(ui, 8, eparr);
-				arr = malloc(sizeof(CubeArray));
+				arr = static_cast<CubeArray *>(malloc(sizeof(CubeArray)));
 				arr->ep = eparr;
 				cube = arrays_to_cube(arr, pf_ep);
 				free(arr);
@@ -730,7 +730,7 @@ read_scramble(int c, char **v, CommandArgs *args)
 	for (n = 0, i = 0; i < c; i++)
 		n += strlen(v[i]);
 
-	algstr = malloc((n + 1) * sizeof(char));
+	algstr = static_cast<char *>(malloc((n + 1) * sizeof(char)));
 	k = 0;
 	for (i = 0; i < c; i++)
 		for (j = 0; j < strlen(v[i]); j++)
@@ -800,12 +800,12 @@ void free_args(CommandArgs *args)
 CommandArgs *
 new_args(void)
 {
-	CommandArgs *args = malloc(sizeof(CommandArgs));
+	CommandArgs *args = static_cast<CommandArgs *>(malloc(sizeof(CommandArgs)));
 
 	args->success = false;
 	args->scrstdin = false;
 	args->scramble = NULL; /* initialized in read_scramble */
-	args->opts = malloc(sizeof(SolveOptions));
+	args->opts = static_cast<CommandArgs *>(malloc(sizeof(SolveOptions)));
 
 	/* step and command are static */
 	args->step = steps[0]; /* default: first step in list */

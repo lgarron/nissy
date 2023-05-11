@@ -109,7 +109,7 @@ allowed_next_HTM(Move l2, Move l1, Move m)
 
 void append_alg(AlgList *l, Alg *alg)
 {
-	AlgListNode *node = malloc(sizeof(AlgListNode));
+	AlgListNode *node = static_cast<AlgListNode *>(malloc(sizeof(AlgListNode)));
 	int i;
 
 	node->alg = new_alg("");
@@ -308,9 +308,9 @@ Alg *new_alg(char *str)
 	bool niss, move_read;
 	Move j, m;
 
-	alg = malloc(sizeof(Alg));
-	alg->move = malloc(30 * sizeof(Move));
-	alg->inv = malloc(30 * sizeof(bool));
+	alg = static_cast<Alg *>(malloc(sizeof(Alg)));
+	alg->move = static_cast<Move *>(malloc(30 * sizeof(Move)));
+	alg->inv = static_cast<bool *>(malloc(30 * sizeof(bool)));
 	alg->allocated = 30;
 	alg->len = 0;
 
@@ -421,7 +421,7 @@ Alg *new_alg(char *str)
 AlgList *
 new_alglist(void)
 {
-	AlgList *ret = malloc(sizeof(AlgList));
+	AlgList *ret = static_cast<AlgList *>(malloc(sizeof(AlgList)));
 
 	ret->len = 0;
 	ret->first = NULL;

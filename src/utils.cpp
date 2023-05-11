@@ -2,7 +2,7 @@
 
 void apply_permutation(int *perm, int *set, int n)
 {
-	int *aux = malloc(n * sizeof(int));
+	int *aux = static_cast<int *>(malloc(n * sizeof(int)));
 	int i;
 
 	if (!is_perm(perm, n))
@@ -48,7 +48,7 @@ int factorial(int n)
 
 void index_to_perm(int p, int n, int *r)
 {
-	int *a = malloc(n * sizeof(int));
+	int *a = static_cast<int *>(malloc(n * sizeof(int)));
 	int i, j, c;
 
 	for (i = 0; i < n; i++)
@@ -145,7 +145,7 @@ void int_to_sum_zero_array(int x, int b, int n, int *a)
 
 int invert_digits(int a, int b, int n)
 {
-	int i, ret, *r = malloc(n * sizeof(int));
+	int i, ret, *r = static_cast<int *>(malloc(n * sizeof(int)));
 
 	int_to_digit_array(a, b, n, r);
 	for (i = 0; i < n; i++)
